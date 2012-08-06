@@ -24,14 +24,25 @@ import android.text.TextUtils;
  * Value type that represents an Account in the {@link AccountManager}. This object is
  * {@link Parcelable} and also overrides {@link #equals} and {@link #hashCode}, making it
  * suitable for use as the key of a {@link java.util.Map}
+ * <br>值类型，代表{@link AccountManager}管理的一个账户，该对象是{@link Parcelable}同时重写了{@Link #equals}
+ * 和{@lin #hashCode}方法，使之可以作为{@link java.util.Map}的key
  */
 public class Account implements Parcelable {
+	/**
+	 * 名称
+	 */
     public final String name;
+    /**
+     * 类型
+     */
     public final String type;
 
     public boolean equals(Object o) {
+    	//判断时候和this相等
         if (o == this) return true;
+        //判断是否为Account类型
         if (!(o instanceof Account)) return false;
+        //判断name和type是否相等
         final Account other = (Account)o;
         return name.equals(other.name) && type.equals(other.type);
     }

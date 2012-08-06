@@ -18,6 +18,7 @@ package android.accounts;
 
 /**
  * An interface that contains the callback used by the AccountMonitor
+ * <br>AccountMonitor使用的回调接口
  */
 public interface OnAccountsUpdateListener {
     /**
