@@ -50,6 +50,7 @@ import java.util.ArrayList;
 
 /**
  * This class provides applications access to the content model.
+ * 返回应用程序对数据模型的访问
  */
 public abstract class ContentResolver {
     /**

@@ -21,6 +21,7 @@ package java.lang;
 /**
  * This interface represents an ordered set of characters and defines the
  * methods to probe them.
+ * <br>本类代表了一个有序的字符集合并且定义了操作字符的方法
  */
 public interface CharSequence {
 

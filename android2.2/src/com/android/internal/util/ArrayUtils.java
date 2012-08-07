@@ -30,7 +30,9 @@ import java.util.Collection;
  */
 public class ArrayUtils
 {
-	//空数组
+	/**
+	 * 空数组
+	 */
     private static Object[] EMPTY = new Object[0];
     //sCache的大小
     private static final int CACHE_SIZE = 73;
@@ -51,38 +53,67 @@ public class ArrayUtils
 
         return need;
     }
-
+    /**
+     * 较为理想的字节数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealBooleanArraySize(int need) {
         return idealByteArraySize(need);
     }
-
+    /**
+     * 较为理想的short数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealShortArraySize(int need) {
         return idealByteArraySize(need * 2) / 2;
     }
-
+    /**
+     * 较为理想的字符数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealCharArraySize(int need) {
         return idealByteArraySize(need * 2) / 2;
     }
-
+    /**
+     * 较为理想的Int数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealIntArraySize(int need) {
         return idealByteArraySize(need * 4) / 4;
     }
-
+    /**
+     * 较为理想的Float数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealFloatArraySize(int need) {
         return idealByteArraySize(need * 4) / 4;
     }
-
+    /**
+     * 较为理想的Object数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealObjectArraySize(int need) {
         return idealByteArraySize(need * 4) / 4;
     }
-
+    /**
+     * 较为理想的long数组长度
+     * @param need 可能需要的长度
+     * @return
+     */
     public static int idealLongArraySize(int need) {
         return idealByteArraySize(need * 8) / 8;
     }
 
     /**
      * Checks if the beginnings of two byte arrays are equal.
-     * <br>判断两个字节数组是否相同
+     * <br>判断两个字节数组是否相同,首先判断两个数组是否为同一个对象的引用，
+     * 然后判断两个数组的长度是否相同小于比较的长度，最后比较每一个元素。
      * @param array1 the first byte array
      * @param array2 the second byte array
      * @param length the number of bytes to check
@@ -107,12 +138,14 @@ public class ArrayUtils
      * Returns an empty array of the specified type.  The intent is that
      * it will return the same empty array every time to avoid reallocation,
      * although this is not guaranteed.
+     * <br>返回一个空的指定类型的数组，本函数的目的是每一次都返回一个相同的数组来避免重新分配空间。
+     * 虽然本方法并不能保证一定能够实现此目的。
      */
     public static <T> T[] emptyArray(Class<T> kind) {
         if (kind == Object.class) {
             return (T[]) EMPTY;
         }
-        //索引值
+        //索引值,根据类型来计算索引值
         int bucket = ((System.identityHashCode(kind) / 8) & 0x7FFFFFFF) % CACHE_SIZE;
         Object cache = sCache[bucket];
         //如果没有保存，则新建一个
@@ -128,6 +161,7 @@ public class ArrayUtils
 
     /**
      * Checks that value is present as at least one of the elements of the array.
+     * 判断一个数组中是否包含了指定数据
      * @param array the array to check in
      * @param value the value to check for
      * @return true if the value is present in the array

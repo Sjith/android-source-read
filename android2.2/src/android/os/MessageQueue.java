@@ -25,14 +25,18 @@ import android.util.Log;
 import com.android.internal.os.RuntimeInit;
 
 /**
+ * 底层类，用于保持由{@link Looper}分发的消息队列。消息并没有直接发送给MessageQueue,
+ * 而是通过{@link Handler}来与looper相关联
  * Low-level class holding the list of messages to be dispatched by a
  * {@link Looper}.  Messages are not added directly to a MessageQueue,
  * but rather through {@link Handler} objects associated with the Looper.
  * 
  * <p>You can retrieve the MessageQueue for the current thread with
  * {@link Looper#myQueue() Looper.myQueue()}.
+ * <br>通过使用{@link Looper#myQueue() Looper.myQueue()}方法获取当前线程的MessageQueue
  */
 public class MessageQueue {
+	//消息
     Message mMessages;
     private final ArrayList mIdleHandlers = new ArrayList();
     private boolean mQuiting = false;
@@ -41,6 +45,7 @@ public class MessageQueue {
     /**
      * Callback interface for discovering when a thread is going to block
      * waiting for more messages.
+     * <br>回调接口，当发现一个线程已经没有消息，正在等待其他的消息时进行回调使用的接口
      */
     public static interface IdleHandler {
         /**
@@ -49,6 +54,8 @@ public class MessageQueue {
          * to have it removed.  This may be called if there are still messages
          * pending in the queue, but they are all scheduled to be dispatched
          * after the current time.
+         * <br>当消息队列已经没有消息并且将要等待更多的消息时被调用，如果返回true则会保持空闲的handler
+         * 处于活跃状态，否则将其移除。该函数也可能被调用当消息队列中仍然存在消息，但是这些消息仍然会被分发出去。
          */
         boolean queueIdle();
     }
@@ -58,7 +65,8 @@ public class MessageQueue {
      * removed automatically for you by returning false from
      * {@link IdleHandler#queueIdle IdleHandler.queueIdle()} when it is
      * invoked, or explicitly removing it with {@link #removeIdleHandler}.
-     * 
+     * <br>添加一个{@link IdleHandler}到本消息队列，如果{@link IdleHandler#queueIdle IdleHandler.queueIdle()} 
+     * 返回false且该函数被调用，或者明确调用{@link #removeIdleHandler}将会删除此IdleHandler
      * <p>This method is safe to call from any thread.
      * 
      * @param handler The IdleHandler to be added.
@@ -76,7 +84,7 @@ public class MessageQueue {
      * Remove an {@link IdleHandler} from the queue that was previously added
      * with {@link #addIdleHandler}.  If the given object is not currently
      * in the idle list, nothing is done.
-     * 
+     * <br>删除指定的IdleHandler
      * @param handler The IdleHandler to be removed.
      */
     public final void removeIdleHandler(IdleHandler handler) {

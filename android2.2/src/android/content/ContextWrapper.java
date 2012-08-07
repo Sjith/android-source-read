@@ -40,8 +40,12 @@ import java.io.InputStream;
  * Proxying implementation of Context that simply delegates all of its calls to
  * another Context.  Can be subclassed to modify behavior without changing
  * the original Context.
+ * <br>Context的代理实现类，仅仅将所有对其调用转到另外一个Context上，可以对该类进行子类化，而不需要改变原来的Context
  */
 public class ContextWrapper extends Context {
+	/**
+	 * 基Context
+	 */
     Context mBase;
 
     public ContextWrapper(Context base) {
@@ -52,7 +56,7 @@ public class ContextWrapper extends Context {
      * Set the base context for this ContextWrapper.  All calls will then be
      * delegated to the base context.  Throws
      * IllegalStateException if a base context has already been set.
-     * 
+     * 设置mBase
      * @param base The new base context for this wrapper.
      */
     protected void attachBaseContext(Context base) {

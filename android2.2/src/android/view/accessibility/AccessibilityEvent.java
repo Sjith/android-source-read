@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 代表accessibility事件，当可以被通知的事件在用户接口上发生时这些事件可以被系统发出。
+ * 例如Button被点击，View获取焦点。
  * This class represents accessibility events that are sent by the system when
  * something notable happens in the user interface. For example, when a
  * {@link android.widget.Button} is clicked, a {@link android.view.View} is focused, etc.

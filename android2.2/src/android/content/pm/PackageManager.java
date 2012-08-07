@@ -1329,7 +1329,7 @@ public abstract class PackageManager {
 
     /**
      * Retrieve all activities that can be performed for the given intent.
-     *
+     * <br>获取所有实现了Intent的activity
      * @param intent The desired intent as per resolveActivity().
      * @param flags Additional option flags.  The most important is
      *                    MATCH_DEFAULT_ONLY, to limit the resolution to only

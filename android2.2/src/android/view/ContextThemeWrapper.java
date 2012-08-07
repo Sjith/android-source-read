@@ -23,6 +23,7 @@ import android.content.res.Resources;
 /**
  * A ContextWrapper that allows you to modify the theme from what is in the 
  * wrapped context. 
+ * <br>可以修改主题的ContextWrapper
  */
 public class ContextThemeWrapper extends ContextWrapper {
     private Context mBase;

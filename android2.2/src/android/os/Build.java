@@ -18,6 +18,7 @@ package android.os;
 
 /**
  * Information about the current build, extracted from system properties.
+ * <br>关于当前编译版本的信息，从系统属性中抽取
  */
 public class Build {
     /** Value used for when a build property is unknown. */
@@ -196,6 +197,11 @@ public class Build {
     public static final String USER = getString("ro.build.user");
     public static final String HOST = getString("ro.build.host");
 
+    /**
+     * 获取指定的属性的值
+     * @param property
+     * @return
+     */
     private static String getString(String property) {
         return SystemProperties.get(property, UNKNOWN);
     }

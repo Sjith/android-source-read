@@ -31,11 +31,15 @@ import java.util.Arrays;
  * {@link Resources.Theme#obtainStyledAttributes(AttributeSet, int[], int, int)}
  * or {@link Resources#obtainAttributes}.  Be
  * sure to call {@link #recycle} when done with them.
+ * <br>通过{@link Resources.Theme#obtainStyledAttributes(AttributeSet, int[], int, int)}
+ * 或者 {@link Resources#obtainAttributes}获取到的值数组的容器。需要注意的是的当使用完该容器之后需要将其清理。
  * 
  * The indices used to retrieve values from this structure correspond to
  * the positions of the attributes given to obtainStyledAttributes.
+ * 从此结构中取值的索引与传递给函数obtainStyled的Attributes所处的positions值
  */
 public class TypedArray {
+	//资源
     private final Resources mResources;
     /*package*/ XmlBlock.Parser mXml;
     /*package*/ int[] mRsrcs;

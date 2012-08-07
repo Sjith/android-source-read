@@ -21,7 +21,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * 
+ * 定义了一个可以发送给{@link Handler}的对象，该对象包含了描述和任意类型的数据对象，该对象包含两个
+ * int属性和一个Object属性，Object属性使得在很多情况下不用进行资源的分配。
+ * <br>
  * Defines a message containing a description and arbitrary data object that can be
  * sent to a {@link Handler}.  This object contains two extra int fields and an
  * extra object field that allow you to not do allocations in many cases.  
@@ -30,6 +32,9 @@ import android.os.Parcelable;
  * one of these is to call {@link #obtain Message.obtain()} or one of the
  * {@link Handler#obtainMessage Handler.obtainMessage()} methods, which will pull
  * them from a pool of recycled objects.</p>
+ * 虽然说Message的构造函数是public的但是最好的获取Message对象的方法是{@link #obtain Message.obtain()}
+ * 或者{@link Handler#obtainMessage Handler.obtainMessage()}中的任意一个，这样就可以从对象池获取一个
+ * 可以循环使用的对象
  */
 public final class Message implements Parcelable {
     /**
@@ -37,6 +42,7 @@ public final class Message implements Parcelable {
      * what this message is about. Each {@link Handler} has its own name-space
      * for message codes, so you do not need to worry about yours conflicting
      * with other handlers.
+     * <br>用户定义的用来表示message类型的属性
      */
     public int what;
 
@@ -44,6 +50,7 @@ public final class Message implements Parcelable {
      * arg1 and arg2 are lower-cost alternatives to using
      * {@link #setData(Bundle) setData()} if you only need to store a
      * few integer values.
+     * 用来保存数据信息的消耗较少低资源的参数，相对于{@link #setData(Bundle) setData()}
      */
     public int arg1; 
 
@@ -55,6 +62,7 @@ public final class Message implements Parcelable {
     public int arg2;
 
     /**
+     * 发送给接受者的任意对象
      * An arbitrary object to send to the recipient.  When using
      * {@link Messenger} to send the message across processes this can only
      * be non-null if it contains a Parcelable of a framework class (not one
@@ -83,7 +91,8 @@ public final class Message implements Parcelable {
     
     // sometimes we store linked lists of these things
     /*package*/ Message next;
-
+    
+    /**同步使用的对象*/
     private static Object mPoolSync = new Object();
     private static Message mPool;
     private static int mPoolSize = 0;
