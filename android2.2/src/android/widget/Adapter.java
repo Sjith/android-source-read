@@ -22,6 +22,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
+ * Adapter用来作为{@link AdapterView}和展示数据的View之间的桥梁。Adapter提供对数据项的访问，
+ * 同时负责为数据集的每一项创建一个view.
  * An Adapter object acts as a bridge between an {@link AdapterView} and the
  * underlying data for that view. The Adapter provides access to the data items.
  * The Adapter is also responsible for making a {@link android.view.View} for
@@ -34,6 +36,7 @@ import android.view.ViewGroup;
 public interface Adapter {
     /**
      * Register an observer that is called when changes happen to the data used by this adapter.
+     * <br>注册一个数据集观察者，用于当数据发生变化时调用
      *
      * @param observer the object that gets notified when the data set changes.
      */
@@ -42,6 +45,7 @@ public interface Adapter {
     /**
      * Unregister an observer that has previously been registered with this
      * adapter via {@link #registerDataSetObserver}.
+     * <br>注销数据集观察者
      *
      * @param observer the object to unregister.
      */
@@ -49,14 +53,14 @@ public interface Adapter {
 
     /**
      * How many items are in the data set represented by this Adapter.
-     * 
+     * <br>返回数据集的子项目的个数
      * @return Count of items.
      */
     int getCount();   
     
     /**
      * Get the data item associated with the specified position in the data set.
-     * 
+     * <br>从数据集中获取指定位置的数据
      * @param position Position of the item whose data we want within the adapter's 
      * data set.
      * @return The data at the specified position.
@@ -65,13 +69,15 @@ public interface Adapter {
     
     /**
      * Get the row id associated with the specified position in the list.
-     * 
+     * <br>获取指定位置的数据的行号
      * @param position The position of the item within the adapter's data set whose row id we want.
      * @return The id of the item at the specified position.
      */
     long getItemId(int position);
     
     /**
+     * 子项的id号是否为固定
+     * <br>
      * Indicated whether the item ids are stable across changes to the
      * underlying data.
      * 
@@ -80,6 +86,8 @@ public interface Adapter {
     boolean hasStableIds();
     
     /**
+     * 创建一个View用来显示指定位置的数据，你可以手动创建一个view或者从一个xml布局文件中创建
+     * <br>
      * Get a View that displays the data at the specified position in the data set. You can either
      * create a View manually or inflate it from an XML layout file. When the View is inflated, the
      * parent View (GridView, ListView...) will apply default layout parameters unless you use

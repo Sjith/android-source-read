@@ -27,6 +27,8 @@ import android.content.res.Configuration;
  * AndroidManifest.xml's &lt;application&gt; tag, which will cause that class
  * to be instantiated for you when the process for your application/package is
  * created.
+ * 
+ * <br>需要维护全局应用程序状态的基类。
  */
 public class Application extends ContextWrapper implements ComponentCallbacks {
     
@@ -35,6 +37,7 @@ public class Application extends ContextWrapper implements ComponentCallbacks {
     }
 
     /**
+     * 当打开应用程序时调用,调用时记得使用super.onCreat()<br>
      * Called when the application is starting, before any other application
      * objects have been created.  Implementations should be as quick as
      * possible (for example using lazy initialization of state) since the time
@@ -46,6 +49,7 @@ public class Application extends ContextWrapper implements ComponentCallbacks {
     }
 
     /**
+     * 当应用程序终止时调用<br>
      * Called when the application is stopping.  There are no more application
      * objects running and the process will exit.  <em>Note: never depend on
      * this method being called; in many cases an unneeded application process

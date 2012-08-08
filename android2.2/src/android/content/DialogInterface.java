@@ -19,7 +19,7 @@ package android.content;
 import android.view.KeyEvent;
 
 /**
- * 
+ * Dialog接口,定义了一些常量和一些操作接口
  */
 public interface DialogInterface {    
     /**
@@ -62,6 +62,7 @@ public interface DialogInterface {
     /**
      * Interface used to allow the creator of a dialog to run some code when the
      * dialog is canceled.
+     * <br>当对话框被取取消时调用的接口,如果知道何时对话框小时，则使用{@link DialogInterface.OnDismissListener}
      * <p>
      * This will only be called when the dialog is canceled, if the creator
      * needs to know when it is dismissed in general, use
@@ -94,6 +95,7 @@ public interface DialogInterface {
     /**
      * Interface used to allow the creator of a dialog to run some code when the
      * dialog is shown.
+     * <br>显示的时候执行的代码
      */
     interface OnShowListener {
         /**
@@ -141,6 +143,7 @@ public interface DialogInterface {
      * Interface definition for a callback to be invoked when a key event is
      * dispatched to this dialog. The callback will be invoked before the key
      * event is given to the dialog.
+     * <br>响应按键操作
      */
     interface OnKeyListener {
         /**

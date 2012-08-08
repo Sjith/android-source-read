@@ -16,12 +16,19 @@
 
 package android.view;
 
-/** Interface to let you add and remove child views to an Activity. To get an instance
-  * of this class, call {@link android.content.Context#getSystemService(java.lang.String) Context.getSystemService()}.
-  */
-public interface ViewManager
-{
-    public void addView(View view, ViewGroup.LayoutParams params);
-    public void updateViewLayout(View view, ViewGroup.LayoutParams params);
-    public void removeView(View view);
+/**
+ * 向Activity添加或者删除view的接口，使用{@link android.content.Context#getSystemService(java.lang.String)
+ * Context.getSystemService()}方法获取其对象
+ * <br>
+ * Interface to let you add and remove child views to an Activity. To get an
+ * instance of this class, call
+ * {@link android.content.Context#getSystemService(java.lang.String)
+ * Context.getSystemService()}.
+ */
+public interface ViewManager {
+	public void addView(View view, ViewGroup.LayoutParams params);
+
+	public void updateViewLayout(View view, ViewGroup.LayoutParams params);
+
+	public void removeView(View view);
 }

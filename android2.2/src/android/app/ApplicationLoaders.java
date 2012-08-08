@@ -20,53 +20,49 @@ import dalvik.system.PathClassLoader;
 
 import java.util.HashMap;
 
-class ApplicationLoaders
-{
-    public static ApplicationLoaders getDefault()
-    {
-        return gApplicationLoaders;
-    }
+class ApplicationLoaders {
+	public static ApplicationLoaders getDefault() {
+		return gApplicationLoaders;
+	}
 
-    public ClassLoader getClassLoader(String zip, String appDataDir,
-            ClassLoader parent)
-    {
-        /*
-         * This is the parent we use if they pass "null" in.  In theory
-         * this should be the "system" class loader; in practice we
-         * don't use that and can happily (and more efficiently) use the
-         * bootstrap class loader.
-         */
-        ClassLoader baseParent = ClassLoader.getSystemClassLoader().getParent();
+	public ClassLoader getClassLoader(String zip, String appDataDir,
+			ClassLoader parent) {
+		/*
+		 * This is the parent we use if they pass "null" in. In theory this
+		 * should be the "system" class loader; in practice we don't use that
+		 * and can happily (and more efficiently) use the bootstrap class
+		 * loader.
+		 */
+		ClassLoader baseParent = ClassLoader.getSystemClassLoader().getParent();
 
-        synchronized (mLoaders) {
-            if (parent == null) {
-                parent = baseParent;
-            }
+		synchronized (mLoaders) {
+			if (parent == null) {
+				parent = baseParent;
+			}
 
-            /*
-             * If we're one step up from the base class loader, find
-             * something in our cache.  Otherwise, we create a whole
-             * new ClassLoader for the zip archive.
-             */
-            if (parent == baseParent) {
-                ClassLoader loader = (ClassLoader)mLoaders.get(zip);
-                if (loader != null) {
-                    return loader;
-                }
-    
-                PathClassLoader pathClassloader =
-                    new PathClassLoader(zip, appDataDir + "/lib", parent);
-                
-                mLoaders.put(zip, pathClassloader);
-                return pathClassloader;
-            }
+			/*
+			 * If we're one step up from the base class loader, find something
+			 * in our cache. Otherwise, we create a whole new ClassLoader for
+			 * the zip archive.
+			 */
+			if (parent == baseParent) {
+				ClassLoader loader = (ClassLoader) mLoaders.get(zip);
+				if (loader != null) {
+					return loader;
+				}
 
-            return new PathClassLoader(zip, parent);
-        }
-    }
+				PathClassLoader pathClassloader = new PathClassLoader(zip,
+						appDataDir + "/lib", parent);
 
-    private final HashMap mLoaders = new HashMap();
+				mLoaders.put(zip, pathClassloader);
+				return pathClassloader;
+			}
 
-    private static final ApplicationLoaders gApplicationLoaders
-        = new ApplicationLoaders();
+			return new PathClassLoader(zip, parent);
+		}
+	}
+
+	private final HashMap mLoaders = new HashMap();
+
+	private static final ApplicationLoaders gApplicationLoaders = new ApplicationLoaders();
 }

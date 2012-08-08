@@ -46,6 +46,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * Intent是将要执行的操作的抽象描述
+ * <br>
  * An intent is an abstract description of an operation to be performed.  It
  * can be used with {@link Context#startActivity(Intent) startActivity} to
  * launch an {@link android.app.Activity},

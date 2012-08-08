@@ -22,6 +22,7 @@ import android.content.Intent;
 
 /**
  * Interface for managing the items in a menu.
+ * <br>操作menu子项的接口
  * <p>
  * By default, every Activity supports an options menu of actions or options.
  * You can add items to this menu and handle clicks on your additions. The

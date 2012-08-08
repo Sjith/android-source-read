@@ -23,42 +23,44 @@ import android.test.suitebuilder.annotation.SmallTest;
  * Tests basic behavior of enums.
  */
 public class EnumTest extends TestCase {
-    enum MyEnum {
-        ZERO, ONE, TWO, THREE, FOUR {boolean isFour() {
-        return true;
-    }};
+	enum MyEnum {
+		ZERO, ONE, TWO, THREE, FOUR {
+			boolean isFour() {
+				return true;
+			}
+		};
 
-        boolean isFour() {
-            return false;
-        }
-    }
+		boolean isFour() {
+			return false;
+		}
+	}
 
-    enum MyEnumTwo {
-        FIVE, SIX
-    }
+	enum MyEnumTwo {
+		FIVE, SIX
+	}
 
-    @SmallTest
-    public void testEnum() throws Exception {
-        assertTrue(MyEnum.ZERO.compareTo(MyEnum.ONE) < 0);
-        assertEquals(MyEnum.ZERO, MyEnum.ZERO);
-        assertTrue(MyEnum.TWO.compareTo(MyEnum.ONE) > 0);
-        assertTrue(MyEnum.FOUR.compareTo(MyEnum.ONE) > 0);
+	@SmallTest
+	public void testEnum() throws Exception {
+		assertTrue(MyEnum.ZERO.compareTo(MyEnum.ONE) < 0);
+		assertEquals(MyEnum.ZERO, MyEnum.ZERO);
+		assertTrue(MyEnum.TWO.compareTo(MyEnum.ONE) > 0);
+		assertTrue(MyEnum.FOUR.compareTo(MyEnum.ONE) > 0);
 
-        assertEquals("ONE", MyEnum.ONE.name());
-        assertSame(MyEnum.ONE.getDeclaringClass(), MyEnum.class);
-        assertSame(MyEnum.FOUR.getDeclaringClass(), MyEnum.class);
+		assertEquals("ONE", MyEnum.ONE.name());
+		assertSame(MyEnum.ONE.getDeclaringClass(), MyEnum.class);
+		assertSame(MyEnum.FOUR.getDeclaringClass(), MyEnum.class);
 
-        assertTrue(MyEnum.FOUR.isFour());
+		assertTrue(MyEnum.FOUR.isFour());
 
-        MyEnum e;
+		MyEnum e;
 
-        e = MyEnum.ZERO;
+		e = MyEnum.ZERO;
 
-        switch (e) {
-            case ZERO:
-                break;
-            default:
-                fail("wrong switch");
-        }
-    }
+		switch (e) {
+		case ZERO:
+			break;
+		default:
+			fail("wrong switch");
+		}
+	}
 }

@@ -43,12 +43,15 @@ import android.view.animation.Transformation;
 import java.util.ArrayList;
 
 /**
+ * ViewGroup是一个特殊的View，它包含了其他的一个或多个View（被叫做子view），
+ * <br>
  * <p>
  * A <code>ViewGroup</code> is a special view that can contain other views
  * (called children.) The view group is the base class for layouts and views
  * containers. This class also defines the
  * {@link android.view.ViewGroup.LayoutParams} class which serves as the base
  * class for layouts parameters.
+ * <br>LayoutParams作为layout的参数。
  * </p>
  *
  * <p>
@@ -71,6 +74,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      * Views which have been hidden or removed which need to be animated on
      * their way out.
      * This field should be made private, so it is hidden from the SDK.
+     * 已经被隐藏或者移除了的view，这些view需要在他们退出的时候执行动画。
      * {@hide}
      */
     protected ArrayList<View> mDisappearingChildren;

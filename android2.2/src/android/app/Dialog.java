@@ -49,7 +49,7 @@ import java.lang.ref.WeakReference;
 
 /**
  * Base class for Dialogs.
- * 
+ * <br>对话框的基类
  * <p>Note: Activities provide a facility to manage the creation, saving and
  * restoring of dialogs. See {@link Activity#onCreateDialog(int)},
  * {@link Activity#onPrepareDialog(int, Dialog)},
@@ -70,18 +70,24 @@ import java.lang.ref.WeakReference;
  */
 public class Dialog implements DialogInterface, Window.Callback,
         KeyEvent.Callback, OnCreateContextMenuListener {
+	/**
+	 * 所属的Activity
+	 */
     private Activity mOwnerActivity;
     
     final Context mContext;
     final WindowManager mWindowManager;
     Window mWindow;
+    /**
+     * 显示的view
+     */
     View mDecor;
     /**
      * This field should be made private, so it is hidden from the SDK.
      * {@hide}
      */
     protected boolean mCancelable = true;
-
+    //取消，消失，显示消息
     private Message mCancelMessage;
     private Message mDismissMessage;
     private Message mShowMessage;
@@ -89,6 +95,7 @@ public class Dialog implements DialogInterface, Window.Callback,
     /**
      * Whether to cancel the dialog when a touch is received outside of the
      * window's bounds.
+     * <br>是否当在对话框的边框外触摸时就取消对话框
      */
     private boolean mCanceledOnTouchOutside = false;
     
@@ -114,7 +121,7 @@ public class Dialog implements DialogInterface, Window.Callback,
 
     /**
      * Create a Dialog window that uses the default dialog frame style.
-     * 
+     * <br>创建一个对话框，使用默认的对话框框架样式
      * @param context The Context the Dialog is to run it.  In particular, it
      *                uses the window manager and theme in this context to
      *                present its UI.
@@ -125,7 +132,7 @@ public class Dialog implements DialogInterface, Window.Callback,
 
     /**
      * Create a Dialog window that uses a custom dialog style.
-     * 
+     * <br>使用自定义的样式创建对话框
      * @param context The Context in which the Dialog should run. In particular, it
      *                uses the window manager and theme from this context to
      *                present its UI.

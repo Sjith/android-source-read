@@ -20,6 +20,7 @@ import android.graphics.Rect;
 /**
  * Standard constants and tools for placing an object within a potentially
  * larger container.
+ * <br>在一个容器内放置一个组件的位置的常数和工具集合
  */
 public class Gravity
 {

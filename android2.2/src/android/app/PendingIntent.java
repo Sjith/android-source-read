@@ -165,6 +165,8 @@ public final class PendingIntent implements Parcelable {
     }
 
     /**
+     * 获取一个PendingIntent用于打开一个新的Activity
+     * <br>
      * Retrieve a PendingIntent that will start a new activity, like calling
      * {@link Context#startActivity(Intent) Context.startActivity(Intent)}.
      * Note that the activity will be started outside of the context of an
@@ -203,6 +205,8 @@ public final class PendingIntent implements Parcelable {
     }
 
     /**
+     * 创建一个PendingIntent将要发送一个广播
+     * <br>
      * Retrieve a PendingIntent that will perform a broadcast, like calling
      * {@link Context#sendBroadcast(Intent) Context.sendBroadcast()}.
      *
