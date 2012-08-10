@@ -124,6 +124,7 @@ public class Looper {
 	 * <br>运行当前线程的消息队列，记得调用{@link #quit()}结束循环
 	 */
 	public static final void loop() {
+		//获取当前线程的looper
 		Looper me = myLooper();
 		MessageQueue queue = me.mQueue;
 		while (true) {

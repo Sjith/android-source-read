@@ -1,0 +1,181 @@
+1、thread 线程，主要负责调度整个消息循环，即消息循环的场所。
+    分为普通线程，消息线程（Looper thread）。
+    普通线程就是从Thread派生的线程。
+   消息线程（Looper thread）：首先从Thread派生，然后在run方法中调用Looper.preapare()和Looper.loop方法；一个消息线程大概如下所示：
+         class LooperThread extends Thread {
+                public Handler mHandler;         
+                public void run() {
+                    Looper.prepare();         
+                    mHandler = new Handler() {
+                        public void handleMessage(Message msg) {
+                            // process incoming messages here
+                        }
+                    };         
+                    Looper.loop();
+                }
+            }
+           在run()方法中 的Handler变量负责消息的处理。当然此变量的初始化，可以放在其他地方，比如，直接在声明的时候使用匿名类来初始化。采用如下所示的方式：
+            public Handler mHandler = new Handler(){
+             public void handleMessage(Message msg){
+                    //your process method
+                }    
+            }
+2、looper，消息泵，不间断的从messageQueue中抽取Message，并进行message的分发。
+    一个looper中包含了一个MessageQueue，其所处理的Message都是从这个消息队列中取出的。
+    另外还包含了一个ThreadLocal变量，private static final ThreadLocal sThreadLocal = new ThreadLocal();从本质上来说一个Looper就是一个ThreadLocal，
+   从Looper的myLooper()方法可以知道：
+        public static final Looper myLooper() {
+            return (Looper) sThreadLocal.get();
+          }
+    从prepare()可以得知，一个线程中只能有一个Looper：
+        public static final void prepare() {
+            //当已经设置过looper则会抛出异常。
+            if (sThreadLocal.get() != null) {
+                  throw new RuntimeException("Only one Looper may be created per thread");
+            }
+            sThreadLocal.set(new Looper());
+          }
+        构造函数代码如下：
+        private Looper() {
+            mQueue = new MessageQueue();
+            mRun = true;
+            mThread = Thread.currentThread();
+          }
+       从构造函数可知，在prepare的时候会创建一个新的MessageQueue，并将looper的线程变量设置为当前正在运行的线程，也就是调用Looper.prepare()方法的线程。
+    Looper的主线程处理，主要有以下两个方法：
+      public static final void prepareMainLooper() {
+        prepare();
+        setMainLooper(myLooper());
+        if (Process.supportsProcesses()) {
+          myLooper().mQueue.mQuitAllowed = false;
+        }
+      }
+     
+      private synchronized static void setMainLooper(Looper looper) {
+        mMainLooper = looper;
+      }
+    这两个方法都不能被应用程序使用，在ActivityThread的main()方法中调用了prePareMainLooper()方法：
+        public static final void main(String[] args) {
+                SamplingProfilerIntegration.start();         
+                Process.setArgV0("<pre-initialized>");         
+                Looper.prepareMainLooper();         
+                ActivityThread thread = new ActivityThread();
+                thread.attach(false);         
+                Looper.loop();         
+                if (Process.supportsProcesses()) {
+                    throw new RuntimeException("Main thread loop unexpectedly exited");
+                }         
+                thread.detach();
+                String name = (thread.mInitialApplication != null)
+                    ? thread.mInitialApplication.getPackageName()
+                    : "<unknown>";
+                Slog.i(TAG, "Main thread of " + name + " is now exiting");
+            }
+        main()方法作为应用程序的入口，在这里设置了主线程的looper。注：在ActivityThread中加载了应用程序的启动activity，因此主线程也可以叫做UI线程。
+        loope()方法是一个无限循环，下面是其代码：        
+            public static final void loop() {
+                //获取当前线程的looper
+                Looper me = myLooper();
+                MessageQueue queue = me.mQueue;
+                while (true) {
+                  //获取下一个消息
+                  Message msg = queue.next(); // might block
+                    //如果消息不是null，并且消息的handler为null，则退出，说明是一个空消息，则退出循环。
+                  if (msg != null ) {
+                    if (msg.target == null) {
+                      // No target is a magic identifier for the quit message.
+                      return;
+                    }
+                   。。。。
+                    //分发消息，使用消息的handler进行消息的分发操作
+                    msg.target.dispatchMessage(msg);
+                    。。。。。
+                    //清空消息
+                    msg.recycle();
+                  }
+                }
+              }
+    3、Message，代表消息包含了消息的类型(what属性确定，在每个线程中唯一），消息的参数（共两个分别为arg1，arg2，int型），以及一个Bundle对象用于传递Object类型数据。
+        Message定义了需要被处理的时间(when属性,long型，该时间基于手机开机时间，在开机时间多长时间后进行消息处理），处理目标(target，Handler型，target    进行消息的分发处理）
+        回调操作，callback，Runnable类型，如果指定了此属性在target进行消息分发时，会执行该回调的run方法，而不进行Message的what信息判断和消息参数的处理。
+        Message的获取方法：
+            1）、构造方法，new Message();不推荐使用
+            2）、obtain()系列方法，在该系列的方法中设置了Message的各种参数，具体配置参考代码。该方法推荐使用。
+    Message仅仅作为需要传递的信息的一个载体，同时指定需要处理该信息的target，target进行消息的分发处理。
+ 
+4、MessageQueue，消息队列（其实是一个链表结构，使用Message类型的next变量进行连接，在此链表中，每个数据按照要执行的时间从大到小进行排序），负责消息的缓存和消息从消息队列中的取出操作。
+    每一个消息都按照执行时间大小插入到列表中，这样可以保证需要立即执行的消息得到及时的执行。
+    从消息队列中取出消息操作，首先会判断是否当前消息需要被执行（通过消息的执行时间和当前时间进行比较）。
+    消息队列的创建是在构建Looper的时候进行创建的。这样可以保证一个线程中只有一个消息队列，而每个消息可以有不同的handler，也就是一个线程可以有多个Handler。
+5、Handler，消息的处理者，负责消息的发送和处理，实现根据消息进行UI更新，文件读取等操作。
+    1）Handler的构建。a）、继承Handler类，并重写handleMessage方法 。b）、实现Handler类中的Callback接口，并实现其handleMessage方法。，其中第一种方法可以通过构建一个新的Handler子类，然后创建新子类的变量，或者通过使用匿名类方法创建变量的方法来创建Handler变量。
+第二种方法使用Handler的类先实现Handler的Callback接口，然后在创建Handler变量的时候，使用带参数的Handler构造方法，并将使用Handler类的this变量传递给构造方法。
+两种方法的示例分别如下：
+            //第一种方法
+            public class Activity1 extends Activity{ 
+              public Handler handler = new Handler(){
+                public void handleMessage(Message msg){
+                  //your process code
+                }
+              } 
+            ********
+            }
+             //第二种方法，实现Callback接口
+            public class Activity2 extends Activity implements Handler.Callback{
+              public boolean handleMessage(Message msg){
+                //your process code
+              } 
+            //创建变量时可以使用下面两种方法的任意一种
+              Handler handler = new Hanlder(this);
+              Handler handler2 = new Handler(Looper.myLooper(),this);
+            ******
+            }
+    Handler的dispatchMessage方法，负责消息的分发，调用具体的消息处理函数
+            public void dispatchMessage(Message msg) {
+                //如果message的回调不是null，则执行message的callback
+                if (msg.callback != null) {
+                  handleCallback(msg);
+                } else {
+                  //如果避免子类化回调不是null，则执行此回调
+                  if (mCallback != null) {
+                    if (mCallback.handleMessage(msg)) {
+                      return;
+                    }
+                  }
+                  //如果子类化回调没有执行成功，则执行子类的handleMessage
+                  handleMessage(msg);
+                }
+              }
+    sendMessage**()方法，用于将消息插入到消息队列中。并设定消息执行的事件，如果传递的是一个没有target的消息则会终止Looper的loop操作，也就是说会终止整个消息循环。
+    post*()方法都会创建一个新的message，并在指定的时间执行消息。在这些方法中指定了Message的callback方法，因此需要执行的操作就是callback的中的run方法。
+6、activity：UI，所有的UI都在一个线程中，即UI线程。因此在Activity中创建的Handler变量也属于UI线程，因此通常情况下在使用handler进行Ui更新操作可以成功就是因为这个原因。
+    UI线程是由android在启动应用程序的时候创建的。
+7、消息循环的过程：
+    1、构建消息线程，在调用Looper.prepare()方法时创建了MessageQueue变量。
+    2、构建Handler变量，并重写handleMessage方法，在构建Handler变量时会将Looper的MessageQueue变量传递给hanler。
+    3、创建工作者线程，在线程的run方法中创建Message变量，示例代码如下：
+          Message msg =handler.obtain();
+        //设置msg的参数，一下为参考代码，根据具体情况可以设置不同的值    
+        msg.what = 1;
+        msg.arg1 = 2;
+        msg.arg2 = 3;
+        Bundle data = new Bunlde();
+        Bundle bundle = new Bundle();
+        //调用bundle的put方法来保存数据
+        bundle.put**();
+        msg.setData(data);
+        //1、此消息的when设置为当前时间(该时间基于开机时间），
+        //2、设置Message的target为调用sendMessage的handler， 
+        //3、将Message插入到Looper的MessageQueue中
+        handler.sendMessage(msg);
+    4、Looper的loop函数进行了从MessageQueue中获取Message，
+    5、调用Message的target的dispatchMessage()方法分发消息。
+    6、在dispatch中根据不同条件调用不同的消息处理方法。
+    7、调用Message的recycle()方法清空消息，到此处消息结束其生命。
+ 
+获取当前线程的looper：Looper.myLooper();
+获取looper的MessageQueue：looper.mQueue;
+获取message的target：message.target;
+ 
+关于Service和线程的关系，service不是一个线程，和activity一样是应用程序的一部分，一般情况下运行在主线程中，如果AndroidMenifest.xml文件中注册sevice时，指定了其android:process属性，则运行在其他进程中。
+关于service的参考网址：http://blog.csdn.net/ahcyd008/article/details/7577986
