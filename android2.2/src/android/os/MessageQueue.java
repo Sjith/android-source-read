@@ -25,12 +25,12 @@ import android.util.Log;
 import com.android.internal.os.RuntimeInit;
 
 /**
+ * 消息队列，用于保存消息<br>
  * 底层类，用于保持由{@link Looper}分发的消息队列。消息并没有直接发送给MessageQueue,
  * 而是通过{@link Handler}来与looper相关联
  * Low-level class holding the list of messages to be dispatched by a
  * {@link Looper}.  Messages are not added directly to a MessageQueue,
  * but rather through {@link Handler} objects associated with the Looper.
- * 
  * <p>You can retrieve the MessageQueue for the current thread with
  * {@link Looper#myQueue() Looper.myQueue()}.
  * <br>通过使用{@link Looper#myQueue() Looper.myQueue()}方法获取当前线程的MessageQueue
@@ -38,8 +38,17 @@ import com.android.internal.os.RuntimeInit;
 public class MessageQueue {
 	//消息
     Message mMessages;
+    /**
+     * 空闲Handler的队列
+     */
     private final ArrayList mIdleHandlers = new ArrayList();
+    /**
+     * 是否已经退出
+     */
     private boolean mQuiting = false;
+    /**
+     * 是否允许退出
+     */
     boolean mQuitAllowed = true;
     
     /**
@@ -95,7 +104,11 @@ public class MessageQueue {
 
     MessageQueue() {
     }
-
+    
+    /**
+     * 获取下一个消息
+     * @return
+     */
     final Message next() {
         boolean tryIdle = true;
 
@@ -105,7 +118,9 @@ public class MessageQueue {
     
             // Try to retrieve the next message, returning if found.
             synchronized (this) {
+            	//当前的已经开机毫秒数
                 now = SystemClock.uptimeMillis();
+                //获取下一个需要执行的消息
                 Message msg = pullNextLocked(now);
                 if (msg != null) return msg;
                 if (tryIdle && mIdleHandlers.size() > 0) {
@@ -115,6 +130,7 @@ public class MessageQueue {
     
             // There was no message so we are going to wait...  but first,
             // if there are any idle handlers let them know.
+            //看是否有空闲的handler，如果存在则通知他们
             boolean didIdle = false;
             if (idlers != null) {
                 for (Object idler : idlers) {
@@ -160,6 +176,11 @@ public class MessageQueue {
         }
     }
 
+    /**
+     * 获取下一个需要执行的且在第一个需要执行的message执行时间之后的第一个message.
+     * @param now
+     * @return
+     */
     final Message pullNextLocked(long now) {
         Message msg = mMessages;
         if (msg != null) {
@@ -174,15 +195,24 @@ public class MessageQueue {
         return null;
     }
 
+    /**
+     * 插入一个消息
+     * @param msg 消息
+     * @param when 执行message的时间，基于{@link android.os.SystemClock#uptimeMillis}。
+     * @return
+     */
     final boolean enqueueMessage(Message msg, long when) {
+    	//判断是否message的when是否为0，如果不为0则抛出异常
         if (msg.when != 0) {
             throw new AndroidRuntimeException(msg
                     + " This message is already in use.");
         }
+        //如果执行message没有执行目标并且不允许退出则抛出异常。
         if (msg.target == null && !mQuitAllowed) {
             throw new RuntimeException("Main thread not allowed to quit");
         }
         synchronized (this) {
+        	//如果已经退出则抛出异常
             if (mQuiting) {
                 RuntimeException e = new RuntimeException(
                     msg.target + " sending message to a Handler on a dead thread");
@@ -191,15 +221,17 @@ public class MessageQueue {
             } else if (msg.target == null) {
                 mQuiting = true;
             }
-
+            //给message设置执行时间
             msg.when = when;
             //Log.d("MessageQueue", "Enqueing: " + msg);
             Message p = mMessages;
+            //如果为需要立即执行的消息，则将message插入到第一个.p==null表示没有其他需要等待消息。when ==0 || when < p.when表示需要立即执行
             if (p == null || when == 0 || when < p.when) {
                 msg.next = p;
                 mMessages = msg;
                 this.notify();
             } else {
+            	//插入到合适的位置，链表插入操作
                 Message prev = null;
                 while (p != null && p.when <= when) {
                     prev = p;
@@ -218,7 +250,9 @@ public class MessageQueue {
         synchronized (this) {
             Message p = mMessages;
             boolean found = false;
-
+            //删除操作分成两部分，第一部分删除前端，这一部分message的target，what，object都与参数相匹配。
+            //后一部分至少有一个与参数不匹配，需要删除此部分中的所有与参数匹配的message.            
+            //这是由于需要保证mMessage指向参数不匹配的第一个message。从此message开始分成前端和后端两部分。
             // Remove all messages at front.
             while (p != null && p.target == h && p.what == what
                    && (object == null || p.obj == object)) {
@@ -236,6 +270,7 @@ public class MessageQueue {
                 if (n != null) {
                     if (n.target == h && n.what == what
                         && (object == null || n.obj == object)) {
+                    	//如果找到相匹配的则删除
                         if (!doRemove) return true;
                         found = true;
                         Message nn = n.next;
@@ -244,6 +279,7 @@ public class MessageQueue {
                         continue;
                     }
                 }
+                //向后移动
                 p = n;
             }
             

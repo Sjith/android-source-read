@@ -22,59 +22,62 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
+ * 用于ListViwe和Spinner的通用类。作为所有Adapter的基类。
  * Common base class of common implementation for an {@link Adapter} that can be
  * used in both {@link ListView} (by implementing the specialized
  * {@link ListAdapter} interface} and {@link Spinner} (by implementing the
  * specialized {@link SpinnerAdapter} interface.
  */
 public abstract class BaseAdapter implements ListAdapter, SpinnerAdapter {
-    private final DataSetObservable mDataSetObservable = new DataSetObservable();
+	private final DataSetObservable mDataSetObservable = new DataSetObservable();
 
-    public boolean hasStableIds() {
-        return false;
-    }
-    
-    public void registerDataSetObserver(DataSetObserver observer) {
-        mDataSetObservable.registerObserver(observer);
-    }
+	public boolean hasStableIds() {
+		return false;
+	}
 
-    public void unregisterDataSetObserver(DataSetObserver observer) {
-        mDataSetObservable.unregisterObserver(observer);
-    }
-    
-    /**
-     * Notifies the attached View that the underlying data has been changed
-     * and it should refresh itself.
-     */
-    public void notifyDataSetChanged() {
-        mDataSetObservable.notifyChanged();
-    }
-    
-    public void notifyDataSetInvalidated() {
-        mDataSetObservable.notifyInvalidated();
-    }
+	public void registerDataSetObserver(DataSetObserver observer) {
+		mDataSetObservable.registerObserver(observer);
+	}
 
-    public boolean areAllItemsEnabled() {
-        return true;
-    }
+	public void unregisterDataSetObserver(DataSetObserver observer) {
+		mDataSetObservable.unregisterObserver(observer);
+	}
 
-    public boolean isEnabled(int position) {
-        return true;
-    }
+	/**
+	 * 通知相关的view底层数据已经发生更改，并且通知view去刷新界面
+	 * <br>
+	 * Notifies the attached View that the underlying data has been changed and
+	 * it should refresh itself.
+	 */
+	public void notifyDataSetChanged() {
+		mDataSetObservable.notifyChanged();
+	}
 
-    public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        return getView(position, convertView, parent);
-    }
+	public void notifyDataSetInvalidated() {
+		mDataSetObservable.notifyInvalidated();
+	}
 
-    public int getItemViewType(int position) {
-        return 0;
-    }
+	public boolean areAllItemsEnabled() {
+		return true;
+	}
 
-    public int getViewTypeCount() {
-        return 1;
-    }
-    
-    public boolean isEmpty() {
-        return getCount() == 0;
-    }
+	public boolean isEnabled(int position) {
+		return true;
+	}
+
+	public View getDropDownView(int position, View convertView, ViewGroup parent) {
+		return getView(position, convertView, parent);
+	}
+
+	public int getItemViewType(int position) {
+		return 0;
+	}
+
+	public int getViewTypeCount() {
+		return 1;
+	}
+
+	public boolean isEmpty() {
+		return getCount() == 0;
+	}
 }

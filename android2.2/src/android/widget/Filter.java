@@ -23,6 +23,8 @@ import android.os.Message;
 import android.util.Log;
 
 /**
+ * Filter限制数据按照一定的模式组织，通常被{@link android.widget.Filterable}创建。
+ * <br>
  * <p>A filter constrains data with a filtering pattern.</p>
  *
  * <p>Filters are usually created by {@link android.widget.Filterable}

@@ -136,6 +136,7 @@ public final class SystemClock {
     native public static boolean setCurrentTimeMillis(long millis);
 
     /**
+     * 从开机以来经历的时间
      * Returns milliseconds since boot, not counting time spent in deep sleep.
      * <b>Note:</b> This value may get reset occasionally (before it would
      * otherwise wrap around).

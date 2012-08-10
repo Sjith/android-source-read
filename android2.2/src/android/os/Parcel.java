@@ -193,6 +193,9 @@ public final class Parcel {
 	private RuntimeException mStack;
 
 	private static final int POOL_SIZE = 6;
+	/**
+	 * 缓存的Parcel缓冲区
+	 */
 	private static final Parcel[] sOwnedPool = new Parcel[POOL_SIZE];
 	private static final Parcel[] sHolderPool = new Parcel[POOL_SIZE];
 
@@ -241,6 +244,7 @@ public final class Parcel {
 
 	/**
 	 * Retrieve a new Parcel object from the pool.
+	 * <br>从缓存的Parcel缓冲区中获取一个新的Parcel对象
 	 */
 	public static Parcel obtain() {
 		final Parcel[] pool = sOwnedPool;
@@ -263,6 +267,7 @@ public final class Parcel {
 	/**
 	 * Put a Parcel object back into the pool. You must not touch the object
 	 * after this call.
+	 * <br>将本Parcel对象放入pool中，调用本方法后不可以再使用本对象。
 	 */
 	public final void recycle() {
 		if (DEBUG_RECYCLE)

@@ -20,6 +20,7 @@ import android.util.Config;
 import android.util.Printer;
 
 /**
+ * 消息泵，用于从MessageQueue中取出消息，并将消息分发给目标。
  * 用于thread执行一个消息循环的类，Thread默认的没有消息循环。创建Looper，通过在线程中调用{@link #prepare}
  * 方法，该线程将执行循环操作，然后调用{@link #loop}使线程处理消息，直到循环结束。
  * Class used to run a message loop for a thread. Threads by default do not have
@@ -58,12 +59,20 @@ public class Looper {
 	private static final boolean localLOGV = DEBUG ? Config.LOGD : Config.LOGV;
 
 	// sThreadLocal.get() will return null unless you've called prepare().
+	//如果没有执行过prepare()方法，则返回null
 	private static final ThreadLocal sThreadLocal = new ThreadLocal();
-
+	
+	/**
+	 * 匹配的消息队列
+	 */
 	final MessageQueue mQueue;
 	volatile boolean mRun;
+	//线程
 	Thread mThread;
 	private Printer mLogging = null;
+	/**
+	 * 主线程的looper
+	 */
 	private static Looper mMainLooper = null;
 
 	/**
@@ -81,6 +90,7 @@ public class Looper {
 	}
 
 	/**
+	 * 设置MainLooper。该方法由android系统调用，请不要调用此方法。
 	 * Initialize the current thread as a looper, marking it as an application's
 	 * main looper. The main looper for your application is created by the
 	 * Android environment, so you should never need to call this function
@@ -102,6 +112,7 @@ public class Looper {
 	/**
 	 * Returns the application's main looper, which lives in the main thread of
 	 * the application.
+	 * <br>获取应用程序的主Looper，与UI线程相关。
 	 */
 	public synchronized static final Looper getMainLooper() {
 		return mMainLooper;
@@ -116,6 +127,7 @@ public class Looper {
 		Looper me = myLooper();
 		MessageQueue queue = me.mQueue;
 		while (true) {
+			//获取下一个消息
 			Message msg = queue.next(); // might block
 			// if (!me.mRun) {
 			// break;
@@ -142,6 +154,7 @@ public class Looper {
 	/**
 	 * Return the Looper object associated with the current thread. Returns null
 	 * if the calling thread is not associated with a Looper.
+	 * <br>获取与当前线程相关的Looper。
 	 */
 	public static final Looper myLooper() {
 		return (Looper) sThreadLocal.get();

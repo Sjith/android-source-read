@@ -128,7 +128,7 @@ public final class Messenger implements Parcelable {
         IBinder b = in.readStrongBinder();
         return b != null ? new Messenger(b) : null;
     }
-    
+
     /**
      * Create a Messenger from a raw IBinder, which had previously been
      * retrieved with {@link #getBinder}.

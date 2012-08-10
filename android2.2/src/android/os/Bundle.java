@@ -29,10 +29,14 @@ import java.util.Set;
 
 /**
  * A mapping from String values to various Parcelable types.
+ * <br>从String到各种各样Parcelable类型的映射
  *
  */
 public final class Bundle implements Parcelable, Cloneable {
     private static final String LOG_TAG = "Bundle";
+    /**
+     * 空Bundle
+     */
     public static final Bundle EMPTY;
 
     static {
@@ -42,13 +46,16 @@ public final class Bundle implements Parcelable, Cloneable {
 
     // Invariant - exactly one of mMap / mParcelledData will be null
     // (except inside a call to unparcel)
-
+    /**
+     * 映射使用的map
+     */
     /* package */ Map<String, Object> mMap = null;
 
-    /*
+    /**
      * If mParcelledData is non-null, then mMap will be null and the
      * data are stored as a Parcel containing a Bundle.  When the data
      * are unparcelled, mParcelledData willbe set to null.
+     * <br>保存的Parcel数据
      */
     /* package */ Parcel mParcelledData = null;
 

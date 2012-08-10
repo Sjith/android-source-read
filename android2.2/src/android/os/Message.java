@@ -21,440 +21,478 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
+ * 消息对象<br>
  * 定义了一个可以发送给{@link Handler}的对象，该对象包含了描述和任意类型的数据对象，该对象包含两个
- * int属性和一个Object属性，Object属性使得在很多情况下不用进行资源的分配。
- * <br>
- * Defines a message containing a description and arbitrary data object that can be
- * sent to a {@link Handler}.  This object contains two extra int fields and an
- * extra object field that allow you to not do allocations in many cases.  
- *
- * <p class="note">While the constructor of Message is public, the best way to get
- * one of these is to call {@link #obtain Message.obtain()} or one of the
- * {@link Handler#obtainMessage Handler.obtainMessage()} methods, which will pull
- * them from a pool of recycled objects.</p>
+ * int属性和一个Object属性，Object属性使得在很多情况下不用进行资源的分配。 <br>
+ * Defines a message containing a description and arbitrary data object that can
+ * be sent to a {@link Handler}. This object contains two extra int fields and
+ * an extra object field that allow you to not do allocations in many cases.
+ * 
+ * <p class="note">
+ * While the constructor of Message is public, the best way to get one of these
+ * is to call {@link #obtain Message.obtain()} or one of the
+ * {@link Handler#obtainMessage Handler.obtainMessage()} methods, which will
+ * pull them from a pool of recycled objects.
+ * </p>
  * 虽然说Message的构造函数是public的但是最好的获取Message对象的方法是{@link #obtain Message.obtain()}
  * 或者{@link Handler#obtainMessage Handler.obtainMessage()}中的任意一个，这样就可以从对象池获取一个
  * 可以循环使用的对象
  */
 public final class Message implements Parcelable {
-    /**
-     * User-defined message code so that the recipient can identify 
-     * what this message is about. Each {@link Handler} has its own name-space
-     * for message codes, so you do not need to worry about yours conflicting
-     * with other handlers.
-     * <br>用户定义的用来表示message类型的属性
-     */
-    public int what;
+	/**
+	 * User-defined message code so that the recipient can identify what this
+	 * message is about. Each {@link Handler} has its own name-space for message
+	 * codes, so you do not need to worry about yours conflicting with other
+	 * handlers. <br>
+	 * 用户定义的用来表示message类型的属性
+	 */
+	public int what;
 
-    /**
-     * arg1 and arg2 are lower-cost alternatives to using
-     * {@link #setData(Bundle) setData()} if you only need to store a
-     * few integer values.
-     * 用来保存数据信息的消耗较少低资源的参数，相对于{@link #setData(Bundle) setData()}
-     */
-    public int arg1; 
+	/**
+	 * arg1 and arg2 are lower-cost alternatives to using
+	 * {@link #setData(Bundle) setData()} if you only need to store a few
+	 * integer values. 用来保存数据信息的消耗较少低资源的参数，相对于{@link #setData(Bundle) setData()}
+	 */
+	public int arg1;
 
-    /**
-     * arg1 and arg2 are lower-cost alternatives to using
-     * {@link #setData(Bundle) setData()} if you only need to store a
-     * few integer values.
-     */
-    public int arg2;
+	/**
+	 * arg1 and arg2 are lower-cost alternatives to using
+	 * {@link #setData(Bundle) setData()} if you only need to store a few
+	 * integer values.
+	 */
+	public int arg2;
 
-    /**
-     * 发送给接受者的任意对象
-     * An arbitrary object to send to the recipient.  When using
-     * {@link Messenger} to send the message across processes this can only
-     * be non-null if it contains a Parcelable of a framework class (not one
-     * implemented by the application).   For other data transfer use
-     * {@link #setData}.
-     * 
-     * <p>Note that Parcelable objects here are not supported prior to
-     * the {@link android.os.Build.VERSION_CODES#FROYO} release.
-     */
-    public Object obj;
+	/**
+	 * 发送给接受者的任意对象 An arbitrary object to send to the recipient. When using
+	 * {@link Messenger} to send the message across processes this can only be
+	 * non-null if it contains a Parcelable of a framework class (not one
+	 * implemented by the application). For other data transfer use
+	 * {@link #setData}.
+	 * 
+	 * <p>
+	 * Note that Parcelable objects here are not supported prior to the
+	 * {@link android.os.Build.VERSION_CODES#FROYO} release.
+	 */
+	public Object obj;
 
-    /**
-     * Optional Messenger where replies to this message can be sent.  The
-     * semantics of exactly how this is used are up to the sender and
-     * receiver.
-     */
-    public Messenger replyTo;
-    
-    /*package*/ long when;
-    
-    /*package*/ Bundle data;
-    
-    /*package*/ Handler target;     
-    
-    /*package*/ Runnable callback;   
-    
-    // sometimes we store linked lists of these things
-    /*package*/ Message next;
-    
-    /**同步使用的对象*/
-    private static Object mPoolSync = new Object();
-    private static Message mPool;
-    private static int mPoolSize = 0;
+	/**
+	 * Optional Messenger where replies to this message can be sent. The
+	 * semantics of exactly how this is used are up to the sender and receiver.
+	 */
+	public Messenger replyTo;
 
-    private static final int MAX_POOL_SIZE = 10;
-    
-    /**
-     * Return a new Message instance from the global pool. Allows us to
-     * avoid allocating new objects in many cases.
-     */
-    public static Message obtain() {
-        synchronized (mPoolSync) {
-            if (mPool != null) {
-                Message m = mPool;
-                mPool = m.next;
-                m.next = null;
-                return m;
-            }
-        }
-        return new Message();
-    }
+	/* package */long when;
 
-    /**
-     * Same as {@link #obtain()}, but copies the values of an existing
-     * message (including its target) into the new one.
-     * @param orig Original message to copy.
-     * @return A Message object from the global pool.
-     */
-    public static Message obtain(Message orig) {
-        Message m = obtain();
-        m.what = orig.what;
-        m.arg1 = orig.arg1;
-        m.arg2 = orig.arg2;
-        m.obj = orig.obj;
-        m.replyTo = orig.replyTo;
-        if (orig.data != null) {
-            m.data = new Bundle(orig.data);
-        }
-        m.target = orig.target;
-        m.callback = orig.callback;
+	/* package */Bundle data;
+	
+	/**
+	 * 处理本消息的handler
+	 */
+	/* package */Handler target;
+	/**
+	 * 处理消息的回调操作
+	 */
+	/* package */Runnable callback;
 
-        return m;
-    }
+	// sometimes we store linked lists of these things
+	// 下一个message,有时需要保存一个链接队列
+	/* package */Message next;
 
-    /**
-     * Same as {@link #obtain()}, but sets the value for the <em>target</em> member on the Message returned.
-     * @param h  Handler to assign to the returned Message object's <em>target</em> member.
-     * @return A Message object from the global pool.
-     */
-    public static Message obtain(Handler h) {
-        Message m = obtain();
-        m.target = h;
+	/** 同步使用的对象 */
+	private static Object mPoolSync = new Object();
+	/**
+	 * 缓存的Message,链表的头
+	 */
+	private static Message mPool;
+	// 缓存的message个数
+	private static int mPoolSize = 0;
 
-        return m;
-    }
+	private static final int MAX_POOL_SIZE = 10;
 
-    /**
-     * Same as {@link #obtain(Handler)}, but assigns a callback Runnable on
-     * the Message that is returned.
-     * @param h  Handler to assign to the returned Message object's <em>target</em> member.
-     * @param callback Runnable that will execute when the message is handled.
-     * @return A Message object from the global pool.
-     */
-    public static Message obtain(Handler h, Runnable callback) {
-        Message m = obtain();
-        m.target = h;
-        m.callback = callback;
+	/**
+	 * 返回一个新的Message对象，如果有缓存的则返回头，否则返回一个新建的Message<br>
+	 * Return a new Message instance from the global pool. Allows us to avoid
+	 * allocating new objects in many cases.
+	 */
+	public static Message obtain() {
+		synchronized (mPoolSync) {
+			if (mPool != null) {
+				Message m = mPool;
+				mPool = m.next;
+				m.next = null;
+				return m;
+			}
+		}
+		return new Message();
+	}
 
-        return m;
-    }
+	/**
+	 * Same as {@link #obtain()}, but copies the values of an existing message
+	 * (including its target) into the new one.
+	 * <br>与{@link #obtain()}一样，从已经存在的message中拷贝数据并生成一个新的Message
+	 * @param orig
+	 *            Original message to copy.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Message orig) {
+		Message m = obtain();
+		m.what = orig.what;
+		m.arg1 = orig.arg1;
+		m.arg2 = orig.arg2;
+		m.obj = orig.obj;
+		m.replyTo = orig.replyTo;
+		if (orig.data != null) {
+			m.data = new Bundle(orig.data);
+		}
+		m.target = orig.target;
+		m.callback = orig.callback;
 
-    /**
-     * Same as {@link #obtain()}, but sets the values for both <em>target</em> and
-     * <em>what</em> members on the Message.
-     * @param h  Value to assign to the <em>target</em> member.
-     * @param what  Value to assign to the <em>what</em> member.
-     * @return A Message object from the global pool.
-     */
-    public static Message obtain(Handler h, int what) {
-        Message m = obtain();
-        m.target = h;
-        m.what = what;
+		return m;
+	}
 
-        return m;
-    }
+	/**
+	 * Same as {@link #obtain()}, but sets the value for the <em>target</em>
+	 * member on the Message returned.
+	 * <br>获取一个Message，同时设置message的target
+	 * @param h
+	 *            Handler to assign to the returned Message object's
+	 *            <em>target</em> member.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h) {
+		Message m = obtain();
+		m.target = h;
 
-    /**
-     * Same as {@link #obtain()}, but sets the values of the <em>target</em>, <em>what</em>, and <em>obj</em>
-     * members.
-     * @param h  The <em>target</em> value to set.
-     * @param what  The <em>what</em> value to set.
-     * @param obj  The <em>object</em> method to set.
-     * @return  A Message object from the global pool.
-     */
-    public static Message obtain(Handler h, int what, Object obj) {
-        Message m = obtain();
-        m.target = h;
-        m.what = what;
-        m.obj = obj;
+		return m;
+	}
 
-        return m;
-    }
+	/**
+	 * Same as {@link #obtain(Handler)}, but assigns a callback Runnable on the
+	 * Message that is returned.
+	 * 
+	 * @param h
+	 *            Handler to assign to the returned Message object's
+	 *            <em>target</em> member.
+	 * @param callback
+	 *            Runnable that will execute when the message is handled.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h, Runnable callback) {
+		Message m = obtain();
+		m.target = h;
+		m.callback = callback;
 
-    /**
-     * Same as {@link #obtain()}, but sets the values of the <em>target</em>, <em>what</em>, 
-     * <em>arg1</em>, and <em>arg2</em> members.
-     * 
-     * @param h  The <em>target</em> value to set.
-     * @param what  The <em>what</em> value to set.
-     * @param arg1  The <em>arg1</em> value to set.
-     * @param arg2  The <em>arg2</em> value to set.
-     * @return  A Message object from the global pool.
-     */
-    public static Message obtain(Handler h, int what, int arg1, int arg2) {
-        Message m = obtain();
-        m.target = h;
-        m.what = what;
-        m.arg1 = arg1;
-        m.arg2 = arg2;
+		return m;
+	}
 
-        return m;
-    }
+	/**
+	 * Same as {@link #obtain()}, but sets the values for both <em>target</em>
+	 * and <em>what</em> members on the Message.
+	 * 
+	 * @param h
+	 *            Value to assign to the <em>target</em> member.
+	 * @param what
+	 *            Value to assign to the <em>what</em> member.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h, int what) {
+		Message m = obtain();
+		m.target = h;
+		m.what = what;
 
-    /**
-     * Same as {@link #obtain()}, but sets the values of the <em>target</em>, <em>what</em>, 
-     * <em>arg1</em>, <em>arg2</em>, and <em>obj</em> members.
-     * 
-     * @param h  The <em>target</em> value to set.
-     * @param what  The <em>what</em> value to set.
-     * @param arg1  The <em>arg1</em> value to set.
-     * @param arg2  The <em>arg2</em> value to set.
-     * @param obj  The <em>obj</em> value to set.
-     * @return  A Message object from the global pool.
-     */
-    public static Message obtain(Handler h, int what, 
-            int arg1, int arg2, Object obj) {
-        Message m = obtain();
-        m.target = h;
-        m.what = what;
-        m.arg1 = arg1;
-        m.arg2 = arg2;
-        m.obj = obj;
+		return m;
+	}
 
-        return m;
-    }
+	/**
+	 * Same as {@link #obtain()}, but sets the values of the <em>target</em>,
+	 * <em>what</em>, and <em>obj</em> members.
+	 * 
+	 * @param h
+	 *            The <em>target</em> value to set.
+	 * @param what
+	 *            The <em>what</em> value to set.
+	 * @param obj
+	 *            The <em>object</em> method to set.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h, int what, Object obj) {
+		Message m = obtain();
+		m.target = h;
+		m.what = what;
+		m.obj = obj;
 
-    /**
-     * Return a Message instance to the global pool.  You MUST NOT touch
-     * the Message after calling this function -- it has effectively been
-     * freed.
-     */
-    public void recycle() {
-        synchronized (mPoolSync) {
-            if (mPoolSize < MAX_POOL_SIZE) {
-                clearForRecycle();
-                
-                next = mPool;
-                mPool = this;
-            }
-        }
-    }
+		return m;
+	}
 
-    /**
-     * Make this message like o.  Performs a shallow copy of the data field.
-     * Does not copy the linked list fields, nor the timestamp or
-     * target/callback of the original message.
-     */
-    public void copyFrom(Message o) {
-        this.what = o.what;
-        this.arg1 = o.arg1;
-        this.arg2 = o.arg2;
-        this.obj = o.obj;
-        this.replyTo = o.replyTo;
+	/**
+	 * Same as {@link #obtain()}, but sets the values of the <em>target</em>,
+	 * <em>what</em>, <em>arg1</em>, and <em>arg2</em> members.
+	 * 
+	 * @param h
+	 *            The <em>target</em> value to set.
+	 * @param what
+	 *            The <em>what</em> value to set.
+	 * @param arg1
+	 *            The <em>arg1</em> value to set.
+	 * @param arg2
+	 *            The <em>arg2</em> value to set.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h, int what, int arg1, int arg2) {
+		Message m = obtain();
+		m.target = h;
+		m.what = what;
+		m.arg1 = arg1;
+		m.arg2 = arg2;
 
-        if (o.data != null) {
-            this.data = (Bundle) o.data.clone();
-        } else {
-            this.data = null;
-        }
-    }
+		return m;
+	}
 
-    /**
-     * Return the targeted delivery time of this message, in milliseconds.
-     */
-    public long getWhen() {
-        return when;
-    }
-    
-    public void setTarget(Handler target) {
-        this.target = target;
-    }
+	/**
+	 * Same as {@link #obtain()}, but sets the values of the <em>target</em>,
+	 * <em>what</em>, <em>arg1</em>, <em>arg2</em>, and <em>obj</em> members.
+	 * 
+	 * @param h
+	 *            The <em>target</em> value to set.
+	 * @param what
+	 *            The <em>what</em> value to set.
+	 * @param arg1
+	 *            The <em>arg1</em> value to set.
+	 * @param arg2
+	 *            The <em>arg2</em> value to set.
+	 * @param obj
+	 *            The <em>obj</em> value to set.
+	 * @return A Message object from the global pool.
+	 */
+	public static Message obtain(Handler h, int what, int arg1, int arg2,
+			Object obj) {
+		Message m = obtain();
+		m.target = h;
+		m.what = what;
+		m.arg1 = arg1;
+		m.arg2 = arg2;
+		m.obj = obj;
 
-    /**
-     * Retrieve the a {@link android.os.Handler Handler} implementation that
-     * will receive this message. The object must implement
-     * {@link android.os.Handler#handleMessage(android.os.Message)
-     * Handler.handleMessage()}. Each Handler has its own name-space for
-     * message codes, so you do not need to
-     * worry about yours conflicting with other handlers.
-     */
-    public Handler getTarget() {
-        return target;
-    }
+		return m;
+	}
 
-    /**
-     * Retrieve callback object that will execute when this message is handled.
-     * This object must implement Runnable. This is called by
-     * the <em>target</em> {@link Handler} that is receiving this Message to
-     * dispatch it.  If
-     * not set, the message will be dispatched to the receiving Handler's
-     * {@link Handler#handleMessage(Message Handler.handleMessage())}.
-     */
-    public Runnable getCallback() {
-        return callback;
-    }
-    
-    /** 
-     * Obtains a Bundle of arbitrary data associated with this
-     * event, lazily creating it if necessary. Set this value by calling
-     * {@link #setData(Bundle)}.  Note that when transferring data across
-     * processes via {@link Messenger}, you will need to set your ClassLoader
-     * on the Bundle via {@link Bundle#setClassLoader(ClassLoader)
-     * Bundle.setClassLoader()} so that it can instantiate your objects when
-     * you retrieve them.
-     * @see #peekData()
-     * @see #setData(Bundle)
-     */
-    public Bundle getData() {
-        if (data == null) {
-            data = new Bundle();
-        }
-        
-        return data;
-    }
+	/**
+	 * Return a Message instance to the global pool. You MUST NOT touch the
+	 * Message after calling this function -- it has effectively been freed.
+	 */
+	public void recycle() {
+		synchronized (mPoolSync) {
+			if (mPoolSize < MAX_POOL_SIZE) {
+				clearForRecycle();
 
-    /** 
-     * Like getData(), but does not lazily create the Bundle.  A null
-     * is returned if the Bundle does not already exist.  See
-     * {@link #getData} for further information on this.
-     * @see #getData()
-     * @see #setData(Bundle)
-     */
-    public Bundle peekData() {
-        return data;
-    }
+				next = mPool;
+				mPool = this;
+			}
+		}
+	}
 
-    /**
-     * Sets a Bundle of arbitrary data values. Use arg1 and arg1 members 
-     * as a lower cost way to send a few simple integer values, if you can.
-     * @see #getData() 
-     * @see #peekData()
-     */
-    public void setData(Bundle data) {
-        this.data = data;
-    }
+	/**
+	 * Make this message like o. Performs a shallow copy of the data field. Does
+	 * not copy the linked list fields, nor the timestamp or target/callback of
+	 * the original message.
+	 */
+	public void copyFrom(Message o) {
+		this.what = o.what;
+		this.arg1 = o.arg1;
+		this.arg2 = o.arg2;
+		this.obj = o.obj;
+		this.replyTo = o.replyTo;
 
-    /**
-     * Sends this Message to the Handler specified by {@link #getTarget}.
-     * Throws a null pointer exception if this field has not been set.
-     */
-    public void sendToTarget() {
-        target.sendMessage(this);
-    }
+		if (o.data != null) {
+			this.data = (Bundle) o.data.clone();
+		} else {
+			this.data = null;
+		}
+	}
 
-    /*package*/ void clearForRecycle() {
-        what = 0;
-        arg1 = 0;
-        arg2 = 0;
-        obj = null;
-        replyTo = null;
-        when = 0;
-        target = null;
-        callback = null;
-        data = null;
-    }
+	/**
+	 * Return the targeted delivery time of this message, in milliseconds.
+	 */
+	public long getWhen() {
+		return when;
+	}
 
-    /** Constructor (but the preferred way to get a Message is to call {@link #obtain() Message.obtain()}).
-    */
-    public Message() {
-    }
+	public void setTarget(Handler target) {
+		this.target = target;
+	}
 
-    public String toString() {
-        StringBuilder   b = new StringBuilder();
-        
-        b.append("{ what=");
-        b.append(what);
+	/**
+	 * Retrieve the a {@link android.os.Handler Handler} implementation that
+	 * will receive this message. The object must implement
+	 * {@link android.os.Handler#handleMessage(android.os.Message)
+	 * Handler.handleMessage()}. Each Handler has its own name-space for message
+	 * codes, so you do not need to worry about yours conflicting with other
+	 * handlers.
+	 */
+	public Handler getTarget() {
+		return target;
+	}
 
-        b.append(" when=");
-        b.append(when);
+	/**
+	 * Retrieve callback object that will execute when this message is handled.
+	 * This object must implement Runnable. This is called by the
+	 * <em>target</em> {@link Handler} that is receiving this Message to
+	 * dispatch it. If not set, the message will be dispatched to the receiving
+	 * Handler's {@link Handler#handleMessage(Message Handler.handleMessage())}.
+	 */
+	public Runnable getCallback() {
+		return callback;
+	}
 
-        if (arg1 != 0) {
-            b.append(" arg1=");
-            b.append(arg1);
-        }
+	/**
+	 * Obtains a Bundle of arbitrary data associated with this event, lazily
+	 * creating it if necessary. Set this value by calling
+	 * {@link #setData(Bundle)}. Note that when transferring data across
+	 * processes via {@link Messenger}, you will need to set your ClassLoader on
+	 * the Bundle via {@link Bundle#setClassLoader(ClassLoader)
+	 * Bundle.setClassLoader()} so that it can instantiate your objects when you
+	 * retrieve them.
+	 * 
+	 * @see #peekData()
+	 * @see #setData(Bundle)
+	 */
+	public Bundle getData() {
+		if (data == null) {
+			data = new Bundle();
+		}
 
-        if (arg2 != 0) {
-            b.append(" arg2=");
-            b.append(arg2);
-        }
+		return data;
+	}
 
-        if (obj != null) {
-            b.append(" obj=");
-            b.append(obj);
-        }
+	/**
+	 * Like getData(), but does not lazily create the Bundle. A null is returned
+	 * if the Bundle does not already exist. See {@link #getData} for further
+	 * information on this.
+	 * 
+	 * @see #getData()
+	 * @see #setData(Bundle)
+	 */
+	public Bundle peekData() {
+		return data;
+	}
 
-        b.append(" }");
-        
-        return b.toString();
-    }
+	/**
+	 * Sets a Bundle of arbitrary data values. Use arg1 and arg1 members as a
+	 * lower cost way to send a few simple integer values, if you can.
+	 * 
+	 * @see #getData()
+	 * @see #peekData()
+	 */
+	public void setData(Bundle data) {
+		this.data = data;
+	}
 
-    public static final Parcelable.Creator<Message> CREATOR
-            = new Parcelable.Creator<Message>() {
-        public Message createFromParcel(Parcel source) {
-            Message msg = Message.obtain();
-            msg.readFromParcel(source);
-            return msg;
-        }
-        
-        public Message[] newArray(int size) {
-            return new Message[size];
-        }
-    };
-        
-    public int describeContents() {
-        return 0;
-    }
+	/**
+	 * Sends this Message to the Handler specified by {@link #getTarget}. Throws
+	 * a null pointer exception if this field has not been set.
+	 */
+	public void sendToTarget() {
+		target.sendMessage(this);
+	}
 
-    public void writeToParcel(Parcel dest, int flags) {
-        if (callback != null) {
-            throw new RuntimeException(
-                "Can't marshal callbacks across processes.");
-        }
-        dest.writeInt(what);
-        dest.writeInt(arg1);
-        dest.writeInt(arg2);
-        if (obj != null) {
-            try {
-                Parcelable p = (Parcelable)obj;
-                dest.writeInt(1);
-                dest.writeParcelable(p, flags);
-            } catch (ClassCastException e) {
-                throw new RuntimeException(
-                    "Can't marshal non-Parcelable objects across processes.");
-            }
-        } else {
-            dest.writeInt(0);
-        }
-        dest.writeLong(when);
-        dest.writeBundle(data);
-        Messenger.writeMessengerOrNullToParcel(replyTo, dest);
-    }
+	/* package */void clearForRecycle() {
+		what = 0;
+		arg1 = 0;
+		arg2 = 0;
+		obj = null;
+		replyTo = null;
+		when = 0;
+		target = null;
+		callback = null;
+		data = null;
+	}
 
-    private final void readFromParcel(Parcel source) {
-        what = source.readInt();
-        arg1 = source.readInt();
-        arg2 = source.readInt();
-        if (source.readInt() != 0) {
-            obj = source.readParcelable(getClass().getClassLoader());
-        }
-        when = source.readLong();
-        data = source.readBundle();
-        replyTo = Messenger.readMessengerOrNullFromParcel(source);
-    }
+	/**
+	 * Constructor (but the preferred way to get a Message is to call
+	 * {@link #obtain() Message.obtain()}).
+	 */
+	public Message() {
+	}
+
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+
+		b.append("{ what=");
+		b.append(what);
+
+		b.append(" when=");
+		b.append(when);
+
+		if (arg1 != 0) {
+			b.append(" arg1=");
+			b.append(arg1);
+		}
+
+		if (arg2 != 0) {
+			b.append(" arg2=");
+			b.append(arg2);
+		}
+
+		if (obj != null) {
+			b.append(" obj=");
+			b.append(obj);
+		}
+
+		b.append(" }");
+
+		return b.toString();
+	}
+
+	public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
+		public Message createFromParcel(Parcel source) {
+			Message msg = Message.obtain();
+			msg.readFromParcel(source);
+			return msg;
+		}
+
+		public Message[] newArray(int size) {
+			return new Message[size];
+		}
+	};
+
+	public int describeContents() {
+		return 0;
+	}
+
+	public void writeToParcel(Parcel dest, int flags) {
+		if (callback != null) {
+			throw new RuntimeException(
+					"Can't marshal callbacks across processes.");
+		}
+		dest.writeInt(what);
+		dest.writeInt(arg1);
+		dest.writeInt(arg2);
+		if (obj != null) {
+			try {
+				Parcelable p = (Parcelable) obj;
+				dest.writeInt(1);
+				dest.writeParcelable(p, flags);
+			} catch (ClassCastException e) {
+				throw new RuntimeException(
+						"Can't marshal non-Parcelable objects across processes.");
+			}
+		} else {
+			dest.writeInt(0);
+		}
+		dest.writeLong(when);
+		dest.writeBundle(data);
+		Messenger.writeMessengerOrNullToParcel(replyTo, dest);
+	}
+
+	private final void readFromParcel(Parcel source) {
+		what = source.readInt();
+		arg1 = source.readInt();
+		arg2 = source.readInt();
+		if (source.readInt() != 0) {
+			obj = source.readParcelable(getClass().getClassLoader());
+		}
+		when = source.readLong();
+		data = source.readBundle();
+		replyTo = Messenger.readMessengerOrNullFromParcel(source);
+	}
 }
-

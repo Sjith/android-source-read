@@ -22,573 +22,623 @@ import android.util.Printer;
 import java.lang.reflect.Modifier;
 
 /**
- * A Handler allows you to send and process {@link Message} and Runnable
- * objects associated with a thread's {@link MessageQueue}.  Each Handler
- * instance is associated with a single thread and that thread's message
- * queue.  When you create a new Handler, it is bound to the thread /
- * message queue of the thread that is creating it -- from that point on,
- * it will deliver messages and runnables to that message queue and execute
- * them as they come out of the message queue.
+ * Handler用于发送和处理Message和与线程的MessageQueue相关的Runnable对象。
+ * 每一个Handler终于一个线程和线程的MessageQueue相关。
+ * 当你创建一个新的Handler时，它就被绑定到创建它的线程或者线程的MessageQueue
+ * ，从这个角度来说，handler将传递message和runnables到 MessageQueue并且执行他们，并将其从消息队列中取出来。<br>
+ * Handler主要有两个用途，1、安排message和runnable在未来的某一个时刻执行，2、在另外一个线程上执行一个操作而不是本线程。 <br>
+ * A Handler allows you to send and process {@link Message} and Runnable objects
+ * associated with a thread's {@link MessageQueue}. Each Handler instance is
+ * associated with a single thread and that thread's message queue. When you
+ * create a new Handler, it is bound to the thread / message queue of the thread
+ * that is creating it -- from that point on, it will deliver messages and
+ * runnables to that message queue and execute them as they come out of the
+ * message queue.
  * 
- * <p>There are two main uses for a Handler: (1) to schedule messages and
- * runnables to be executed as some point in the future; and (2) to enqueue
- * an action to be performed on a different thread than your own.
+ * <p>
+ * There are two main uses for a Handler: (1) to schedule messages and runnables
+ * to be executed as some point in the future; and (2) to enqueue an action to
+ * be performed on a different thread than your own.
+ * <p>
+ * Scheduling messages is accomplished with the {@link #post},
+ * {@link #postAtTime(Runnable, long)}, {@link #postDelayed},
+ * {@link #sendEmptyMessage}, {@link #sendMessage}, {@link #sendMessageAtTime},
+ * and {@link #sendMessageDelayed} methods. The <em>post</em> versions allow you
+ * to enqueue Runnable objects to be called by the message queue when they are
+ * received; the <em>sendMessage</em> versions allow you to enqueue a
+ * {@link Message} object containing a bundle of data that will be processed by
+ * the Handler's {@link #handleMessage} method (requiring that you implement a
+ * subclass of Handler).
  * 
- * <p>Scheduling messages is accomplished with the
- * {@link #post}, {@link #postAtTime(Runnable, long)},
- * {@link #postDelayed}, {@link #sendEmptyMessage},
- * {@link #sendMessage}, {@link #sendMessageAtTime}, and
- * {@link #sendMessageDelayed} methods.  The <em>post</em> versions allow
- * you to enqueue Runnable objects to be called by the message queue when
- * they are received; the <em>sendMessage</em> versions allow you to enqueue
- * a {@link Message} object containing a bundle of data that will be
- * processed by the Handler's {@link #handleMessage} method (requiring that
- * you implement a subclass of Handler).
- * 
- * <p>When posting or sending to a Handler, you can either
- * allow the item to be processed as soon as the message queue is ready
- * to do so, or specify a delay before it gets processed or absolute time for
- * it to be processed.  The latter two allow you to implement timeouts,
- * ticks, and other timing-based behavior.
- * 
- * <p>When a
- * process is created for your application, its main thread is dedicated to
- * running a message queue that takes care of managing the top-level
+ * <p>
+ * When posting or sending to a Handler, you can either allow the item to be
+ * processed as soon as the message queue is ready to do so, or specify a delay
+ * before it gets processed or absolute time for it to be processed. The latter
+ * two allow you to implement timeouts, ticks, and other timing-based behavior.
+ * <br>
+ * 当应用程序的进程被创建时，主线程负责运行一个message queue，该message queue负责管理订车呢过的应用程序对象(包括
+ * activity，broadcast
+ * receiver等等）和任何他们创建爱你的window，你可以创建属于你自己的线程，通过handler与主线程进行通讯。
+ * 调用post和sendMessage方法来完成通信，但是这些操作是在新建的thread中进行。<br>
+ * <p>
+ * When a process is created for your application, its main thread is dedicated
+ * to running a message queue that takes care of managing the top-level
  * application objects (activities, broadcast receivers, etc) and any windows
- * they create.  You can create your own threads, and communicate back with
- * the main application thread through a Handler.  This is done by calling
- * the same <em>post</em> or <em>sendMessage</em> methods as before, but from
- * your new thread.  The given Runnable or Message will than be scheduled
- * in the Handler's message queue and processed when appropriate.
+ * they create. You can create your own threads, and communicate back with the
+ * main application thread through a Handler. This is done by calling the same
+ * <em>post</em> or <em>sendMessage</em> methods as before, but from your new
+ * thread. The given Runnable or Message will than be scheduled in the Handler's
+ * message queue and processed when appropriate.
  */
 public class Handler {
-    /*
-     * Set this flag to true to detect anonymous, local or member classes
-     * that extend this Handler class and that are not static. These kind
-     * of classes can potentially create leaks.
-     */
-    private static final boolean FIND_POTENTIAL_LEAKS = false;
-    private static final String TAG = "Handler";
+	/*
+	 * Set this flag to true to detect anonymous, local or member classes that
+	 * extend this Handler class and that are not static. These kind of classes
+	 * can potentially create leaks.
+	 */
+	private static final boolean FIND_POTENTIAL_LEAKS = false;
+	private static final String TAG = "Handler";
 
-    /**
-     * Callback interface you can use when instantiating a Handler to avoid
-     * having to implement your own subclass of Handler.
-     */
-    public interface Callback {
-        public boolean handleMessage(Message msg);
-    }
-    
-    /**
-     * Subclasses must implement this to receive messages.
-     */
-    public void handleMessage(Message msg) {
-    }
-    
-    /**
-     * Handle system messages here.
-     */
-    public void dispatchMessage(Message msg) {
-        if (msg.callback != null) {
-            handleCallback(msg);
-        } else {
-            if (mCallback != null) {
-                if (mCallback.handleMessage(msg)) {
-                    return;
-                }
-            }
-            handleMessage(msg);
-        }
-    }
+	/**
+	 * Callback interface you can use when instantiating a Handler to avoid
+	 * having to implement your own subclass of Handler.
+	 * <br>回调接口，避免创初始化Handler时实现一个自定义的Handler子类
+	 */
+	public interface Callback {
+		public boolean handleMessage(Message msg);
+	}
 
-    /**
-     * Default constructor associates this handler with the queue for the
-     * current thread.
-     *
-     * If there isn't one, this handler won't be able to receive messages.
-     */
-    public Handler() {
-        if (FIND_POTENTIAL_LEAKS) {
-            final Class<? extends Handler> klass = getClass();
-            if ((klass.isAnonymousClass() || klass.isMemberClass() || klass.isLocalClass()) &&
-                    (klass.getModifiers() & Modifier.STATIC) == 0) {
-                Log.w(TAG, "The following Handler class should be static or leaks might occur: " +
-                    klass.getCanonicalName());
-            }
-        }
+	/**
+	 * Subclasses must implement this to receive messages.
+	 * <b>子类必须实现的函数
+	 */
+	public void handleMessage(Message msg) {
+	}
 
-        mLooper = Looper.myLooper();
-        if (mLooper == null) {
-            throw new RuntimeException(
-                "Can't create handler inside thread that has not called Looper.prepare()");
-        }
-        mQueue = mLooper.mQueue;
-        mCallback = null;
-    }
+	/**
+	 * Handle system messages here.
+	 * <br>处理系统消息
+	 */
+	public void dispatchMessage(Message msg) {
+		//如果message的回调不是null，则执行message的callback
+		if (msg.callback != null) {
+			handleCallback(msg);
+		} else {
+			//如果避免子类化回调不是null，则执行此回调
+			if (mCallback != null) {
+				if (mCallback.handleMessage(msg)) {
+					return;
+				}
+			}
+			//如果子类化回调没有执行成功，则执行子类的handleMessage
+			handleMessage(msg);
+		}
+	}
 
-    /**
-     * Constructor associates this handler with the queue for the
-     * current thread and takes a callback interface in which you can handle
-     * messages.
-     */
-    public Handler(Callback callback) {
-        if (FIND_POTENTIAL_LEAKS) {
-            final Class<? extends Handler> klass = getClass();
-            if ((klass.isAnonymousClass() || klass.isMemberClass() || klass.isLocalClass()) &&
-                    (klass.getModifiers() & Modifier.STATIC) == 0) {
-                Log.w(TAG, "The following Handler class should be static or leaks might occur: " +
-                    klass.getCanonicalName());
-            }
-        }
+	/**
+	 * Default constructor associates this handler with the queue for the
+	 * current thread.
+	 * 
+	 * If there isn't one, this handler won't be able to receive messages.
+	 */
+	public Handler() {
+		if (FIND_POTENTIAL_LEAKS) {
+			final Class<? extends Handler> klass = getClass();
+			if ((klass.isAnonymousClass() || klass.isMemberClass() || klass
+					.isLocalClass())
+					&& (klass.getModifiers() & Modifier.STATIC) == 0) {
+				Log.w(TAG,
+						"The following Handler class should be static or leaks might occur: "
+								+ klass.getCanonicalName());
+			}
+		}
+		//获取looper
+		mLooper = Looper.myLooper();
+		if (mLooper == null) {
+			throw new RuntimeException(
+					"Can't create handler inside thread that has not called Looper.prepare()");
+		}
+		mQueue = mLooper.mQueue;
+		mCallback = null;
+	}
 
-        mLooper = Looper.myLooper();
-        if (mLooper == null) {
-            throw new RuntimeException(
-                "Can't create handler inside thread that has not called Looper.prepare()");
-        }
-        mQueue = mLooper.mQueue;
-        mCallback = callback;
-    }
+	/**
+	 * Constructor associates this handler with the queue for the current thread
+	 * and takes a callback interface in which you can handle messages.
+	 */
+	public Handler(Callback callback) {
+		if (FIND_POTENTIAL_LEAKS) {
+			final Class<? extends Handler> klass = getClass();
+			if ((klass.isAnonymousClass() || klass.isMemberClass() || klass
+					.isLocalClass())
+					&& (klass.getModifiers() & Modifier.STATIC) == 0) {
+				Log.w(TAG,
+						"The following Handler class should be static or leaks might occur: "
+								+ klass.getCanonicalName());
+			}
+		}
 
-    /**
-     * Use the provided queue instead of the default one.
-     */
-    public Handler(Looper looper) {
-        mLooper = looper;
-        mQueue = looper.mQueue;
-        mCallback = null;
-    }
+		mLooper = Looper.myLooper();
+		if (mLooper == null) {
+			throw new RuntimeException(
+					"Can't create handler inside thread that has not called Looper.prepare()");
+		}
+		mQueue = mLooper.mQueue;
+		mCallback = callback;
+	}
 
-    /**
-     * Use the provided queue instead of the default one and take a callback
-     * interface in which to handle messages.
-     */
-    public Handler(Looper looper, Callback callback) {
-        mLooper = looper;
-        mQueue = looper.mQueue;
-        mCallback = callback;
-    }
+	/**
+	 * Use the provided queue instead of the default one.
+	 */
+	public Handler(Looper looper) {
+		mLooper = looper;
+		mQueue = looper.mQueue;
+		mCallback = null;
+	}
 
-    /**
-     * Returns a new {@link android.os.Message Message} from the global message pool. More efficient than
-     * creating and allocating new instances. The retrieved message has its handler set to this instance (Message.target == this).
-     *  If you don't want that facility, just call Message.obtain() instead.
-     */
-    public final Message obtainMessage()
-    {
-        return Message.obtain(this);
-    }
+	/**
+	 * Use the provided queue instead of the default one and take a callback
+	 * interface in which to handle messages.
+	 */
+	public Handler(Looper looper, Callback callback) {
+		mLooper = looper;
+		mQueue = looper.mQueue;
+		mCallback = callback;
+	}
 
-    /**
-     * Same as {@link #obtainMessage()}, except that it also sets the what member of the returned Message.
-     * 
-     * @param what Value to assign to the returned Message.what field.
-     * @return A Message from the global message pool.
-     */
-    public final Message obtainMessage(int what)
-    {
-        return Message.obtain(this, what);
-    }
-    
-    /**
-     * 
-     * Same as {@link #obtainMessage()}, except that it also sets the what and obj members 
-     * of the returned Message.
-     * 
-     * @param what Value to assign to the returned Message.what field.
-     * @param obj Value to assign to the returned Message.obj field.
-     * @return A Message from the global message pool.
-     */
-    public final Message obtainMessage(int what, Object obj)
-    {
-        return Message.obtain(this, what, obj);
-    }
+	/**
+	 * 从全局的Message池中获取一个新的Message,并设置message的target为本对象。
+	 * <br>
+	 * Returns a new {@link android.os.Message Message} from the global message
+	 * pool. More efficient than creating and allocating new instances. The
+	 * retrieved message has its handler set to this instance (Message.target ==
+	 * this). If you don't want that facility, just call Message.obtain()
+	 * instead.
+	 */
+	public final Message obtainMessage() {
+		return Message.obtain(this);
+	}
 
-    /**
-     * 
-     * Same as {@link #obtainMessage()}, except that it also sets the what, arg1 and arg2 members of the returned
-     * Message.
-     * @param what Value to assign to the returned Message.what field.
-     * @param arg1 Value to assign to the returned Message.arg1 field.
-     * @param arg2 Value to assign to the returned Message.arg2 field.
-     * @return A Message from the global message pool.
-     */
-    public final Message obtainMessage(int what, int arg1, int arg2)
-    {
-        return Message.obtain(this, what, arg1, arg2);
-    }
-    
-    /**
-     * 
-     * Same as {@link #obtainMessage()}, except that it also sets the what, obj, arg1,and arg2 values on the 
-     * returned Message.
-     * @param what Value to assign to the returned Message.what field.
-     * @param arg1 Value to assign to the returned Message.arg1 field.
-     * @param arg2 Value to assign to the returned Message.arg2 field.
-     * @param obj Value to assign to the returned Message.obj field.
-     * @return A Message from the global message pool.
-     */
-    public final Message obtainMessage(int what, int arg1, int arg2, Object obj)
-    {
-        return Message.obtain(this, what, arg1, arg2, obj);
-    }
+	/**
+	 * Same as {@link #obtainMessage()}, except that it also sets the what
+	 * member of the returned Message.
+	 * 
+	 * @param what
+	 *            Value to assign to the returned Message.what field.
+	 * @return A Message from the global message pool.
+	 */
+	public final Message obtainMessage(int what) {
+		return Message.obtain(this, what);
+	}
 
-    /**
-     * Causes the Runnable r to be added to the message queue.
-     * The runnable will be run on the thread to which this handler is 
-     * attached. 
-     *  
-     * @param r The Runnable that will be executed.
-     * 
-     * @return Returns true if the Runnable was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean post(Runnable r)
-    {
-       return  sendMessageDelayed(getPostMessage(r), 0);
-    }
-    
-    /**
-     * Causes the Runnable r to be added to the message queue, to be run
-     * at a specific time given by <var>uptimeMillis</var>.
-     * <b>The time-base is {@link android.os.SystemClock#uptimeMillis}.</b>
-     * The runnable will be run on the thread to which this handler is attached.
-     *
-     * @param r The Runnable that will be executed.
-     * @param uptimeMillis The absolute time at which the callback should run,
-     *         using the {@link android.os.SystemClock#uptimeMillis} time-base.
-     *  
-     * @return Returns true if the Runnable was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.  Note that a
-     *         result of true does not mean the Runnable will be processed -- if
-     *         the looper is quit before the delivery time of the message
-     *         occurs then the message will be dropped.
-     */
-    public final boolean postAtTime(Runnable r, long uptimeMillis)
-    {
-        return sendMessageAtTime(getPostMessage(r), uptimeMillis);
-    }
-    
-    /**
-     * Causes the Runnable r to be added to the message queue, to be run
-     * at a specific time given by <var>uptimeMillis</var>.
-     * <b>The time-base is {@link android.os.SystemClock#uptimeMillis}.</b>
-     * The runnable will be run on the thread to which this handler is attached.
-     *
-     * @param r The Runnable that will be executed.
-     * @param uptimeMillis The absolute time at which the callback should run,
-     *         using the {@link android.os.SystemClock#uptimeMillis} time-base.
-     * 
-     * @return Returns true if the Runnable was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.  Note that a
-     *         result of true does not mean the Runnable will be processed -- if
-     *         the looper is quit before the delivery time of the message
-     *         occurs then the message will be dropped.
-     *         
-     * @see android.os.SystemClock#uptimeMillis
-     */
-    public final boolean postAtTime(Runnable r, Object token, long uptimeMillis)
-    {
-        return sendMessageAtTime(getPostMessage(r, token), uptimeMillis);
-    }
-    
-    /**
-     * Causes the Runnable r to be added to the message queue, to be run
-     * after the specified amount of time elapses.
-     * The runnable will be run on the thread to which this handler
-     * is attached.
-     *  
-     * @param r The Runnable that will be executed.
-     * @param delayMillis The delay (in milliseconds) until the Runnable
-     *        will be executed.
-     *        
-     * @return Returns true if the Runnable was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.  Note that a
-     *         result of true does not mean the Runnable will be processed --
-     *         if the looper is quit before the delivery time of the message
-     *         occurs then the message will be dropped.
-     */
-    public final boolean postDelayed(Runnable r, long delayMillis)
-    {
-        return sendMessageDelayed(getPostMessage(r), delayMillis);
-    }
-    
-    /**
-     * Posts a message to an object that implements Runnable.
-     * Causes the Runnable r to executed on the next iteration through the
-     * message queue. The runnable will be run on the thread to which this
-     * handler is attached.
-     * <b>This method is only for use in very special circumstances -- it
-     * can easily starve the message queue, cause ordering problems, or have
-     * other unexpected side-effects.</b>
-     *  
-     * @param r The Runnable that will be executed.
-     * 
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean postAtFrontOfQueue(Runnable r)
-    {
-        return sendMessageAtFrontOfQueue(getPostMessage(r));
-    }
+	/**
+	 * 
+	 * Same as {@link #obtainMessage()}, except that it also sets the what and
+	 * obj members of the returned Message.
+	 * 
+	 * @param what
+	 *            Value to assign to the returned Message.what field.
+	 * @param obj
+	 *            Value to assign to the returned Message.obj field.
+	 * @return A Message from the global message pool.
+	 */
+	public final Message obtainMessage(int what, Object obj) {
+		return Message.obtain(this, what, obj);
+	}
 
-    /**
-     * Remove any pending posts of Runnable r that are in the message queue.
-     */
-    public final void removeCallbacks(Runnable r)
-    {
-        mQueue.removeMessages(this, r, null);
-    }
+	/**
+	 * 
+	 * Same as {@link #obtainMessage()}, except that it also sets the what, arg1
+	 * and arg2 members of the returned Message.
+	 * 
+	 * @param what
+	 *            Value to assign to the returned Message.what field.
+	 * @param arg1
+	 *            Value to assign to the returned Message.arg1 field.
+	 * @param arg2
+	 *            Value to assign to the returned Message.arg2 field.
+	 * @return A Message from the global message pool.
+	 */
+	public final Message obtainMessage(int what, int arg1, int arg2) {
+		return Message.obtain(this, what, arg1, arg2);
+	}
 
-    /**
-     * Remove any pending posts of Runnable <var>r</var> with Object
-     * <var>token</var> that are in the message queue.
-     */
-    public final void removeCallbacks(Runnable r, Object token)
-    {
-        mQueue.removeMessages(this, r, token);
-    }
+	/**
+	 * 
+	 * Same as {@link #obtainMessage()}, except that it also sets the what, obj,
+	 * arg1,and arg2 values on the returned Message.
+	 * 
+	 * @param what
+	 *            Value to assign to the returned Message.what field.
+	 * @param arg1
+	 *            Value to assign to the returned Message.arg1 field.
+	 * @param arg2
+	 *            Value to assign to the returned Message.arg2 field.
+	 * @param obj
+	 *            Value to assign to the returned Message.obj field.
+	 * @return A Message from the global message pool.
+	 */
+	public final Message obtainMessage(int what, int arg1, int arg2, Object obj) {
+		return Message.obtain(this, what, arg1, arg2, obj);
+	}
 
-    /**
-     * Pushes a message onto the end of the message queue after all pending messages
-     * before the current time. It will be received in {@link #handleMessage},
-     * in the thread attached to this handler.
-     *  
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean sendMessage(Message msg)
-    {
-        return sendMessageDelayed(msg, 0);
-    }
+	/**
+	 * Causes the Runnable r to be added to the message queue. The runnable will
+	 * be run on the thread to which this handler is attached.
+	 * 
+	 * @param r
+	 *            The Runnable that will be executed.
+	 * 
+	 * @return Returns true if the Runnable was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean post(Runnable r) {
+		return sendMessageDelayed(getPostMessage(r), 0);
+	}
 
-    /**
-     * Sends a Message containing only the what value.
-     *  
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean sendEmptyMessage(int what)
-    {
-        return sendEmptyMessageDelayed(what, 0);
-    }
+	/**
+	 * 将指定的Runnable添加到message queue中并在给定的时间执行。执行时间基于{@link android.os.SystemClock#uptimeMillis}
+	 * 。runnable将在本对象相关的thread里执行。
+	 * Causes the Runnable r to be added to the message queue, to be run at a
+	 * specific time given by <var>uptimeMillis</var>. <b>The time-base is
+	 * {@link android.os.SystemClock#uptimeMillis}.</b> The runnable will be run
+	 * on the thread to which this handler is attached.
+	 * 
+	 * @param r
+	 *            The Runnable that will be executed.
+	 * @param uptimeMillis
+	 *            The absolute time at which the callback should run, using the
+	 *            {@link android.os.SystemClock#uptimeMillis} time-base.
+	 * 
+	 * @return Returns true if the Runnable was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting. Note that a
+	 *         result of true does not mean the Runnable will be processed -- if
+	 *         the looper is quit before the delivery time of the message occurs
+	 *         then the message will be dropped.
+	 */
+	public final boolean postAtTime(Runnable r, long uptimeMillis) {
+		return sendMessageAtTime(getPostMessage(r), uptimeMillis);
+	}
 
-    /**
-     * Sends a Message containing only the what value, to be delivered
-     * after the specified amount of time elapses.
-     * @see #sendMessageDelayed(android.os.Message, long) 
-     * 
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
-        Message msg = Message.obtain();
-        msg.what = what;
-        return sendMessageDelayed(msg, delayMillis);
-    }
+	/**
+	 * Causes the Runnable r to be added to the message queue, to be run at a
+	 * specific time given by <var>uptimeMillis</var>. <b>The time-base is
+	 * {@link android.os.SystemClock#uptimeMillis}.</b> The runnable will be run
+	 * on the thread to which this handler is attached.
+	 * 
+	 * @param r
+	 *            The Runnable that will be executed.
+	 * @param uptimeMillis
+	 *            The absolute time at which the callback should run, using the
+	 *            {@link android.os.SystemClock#uptimeMillis} time-base.
+	 * 
+	 * @return Returns true if the Runnable was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting. Note that a
+	 *         result of true does not mean the Runnable will be processed -- if
+	 *         the looper is quit before the delivery time of the message occurs
+	 *         then the message will be dropped.
+	 * 
+	 * @see android.os.SystemClock#uptimeMillis
+	 */
+	public final boolean postAtTime(Runnable r, Object token, long uptimeMillis) {
+		return sendMessageAtTime(getPostMessage(r, token), uptimeMillis);
+	}
 
-    /**
-     * Sends a Message containing only the what value, to be delivered 
-     * at a specific time.
-     * @see #sendMessageAtTime(android.os.Message, long)
-     *  
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
+	/**
+	 * 将Runnable对象添加到message queue中，并在指定延迟时间后执行此runnable。
+	 * Causes the Runnable r to be added to the message queue, to be run after
+	 * the specified amount of time elapses. The runnable will be run on the
+	 * thread to which this handler is attached.
+	 * 
+	 * @param r
+	 *            The Runnable that will be executed.
+	 * @param delayMillis
+	 *            The delay (in milliseconds) until the Runnable will be
+	 *            executed.
+	 * 
+	 * @return Returns true if the Runnable was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting. Note that a
+	 *         result of true does not mean the Runnable will be processed -- if
+	 *         the looper is quit before the delivery time of the message occurs
+	 *         then the message will be dropped.
+	 */
+	public final boolean postDelayed(Runnable r, long delayMillis) {
+		return sendMessageDelayed(getPostMessage(r), delayMillis);
+	}
 
-    public final boolean sendEmptyMessageAtTime(int what, long uptimeMillis) {
-        Message msg = Message.obtain();
-        msg.what = what;
-        return sendMessageAtTime(msg, uptimeMillis);
-    }
+	/**
+	 * Posts a message to an object that implements Runnable. Causes the
+	 * Runnable r to executed on the next iteration through the message queue.
+	 * The runnable will be run on the thread to which this handler is attached.
+	 * <b>This method is only for use in very special circumstances -- it can
+	 * easily starve the message queue, cause ordering problems, or have other
+	 * unexpected side-effects.</b>
+	 * 
+	 * @param r
+	 *            The Runnable that will be executed.
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean postAtFrontOfQueue(Runnable r) {
+		return sendMessageAtFrontOfQueue(getPostMessage(r));
+	}
 
-    /**
-     * Enqueue a message into the message queue after all pending messages
-     * before (current time + delayMillis). You will receive it in
-     * {@link #handleMessage}, in the thread attached to this handler.
-     *  
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.  Note that a
-     *         result of true does not mean the message will be processed -- if
-     *         the looper is quit before the delivery time of the message
-     *         occurs then the message will be dropped.
-     */
-    public final boolean sendMessageDelayed(Message msg, long delayMillis)
-    {
-        if (delayMillis < 0) {
-            delayMillis = 0;
-        }
-        return sendMessageAtTime(msg, SystemClock.uptimeMillis() + delayMillis);
-    }
+	/**
+	 * Remove any pending posts of Runnable r that are in the message queue.
+	 */
+	public final void removeCallbacks(Runnable r) {
+		mQueue.removeMessages(this, r, null);
+	}
 
-    /**
-     * Enqueue a message into the message queue after all pending messages
-     * before the absolute time (in milliseconds) <var>uptimeMillis</var>.
-     * <b>The time-base is {@link android.os.SystemClock#uptimeMillis}.</b>
-     * You will receive it in {@link #handleMessage}, in the thread attached
-     * to this handler.
-     * 
-     * @param uptimeMillis The absolute time at which the message should be
-     *         delivered, using the
-     *         {@link android.os.SystemClock#uptimeMillis} time-base.
-     *         
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.  Note that a
-     *         result of true does not mean the message will be processed -- if
-     *         the looper is quit before the delivery time of the message
-     *         occurs then the message will be dropped.
-     */
-    public boolean sendMessageAtTime(Message msg, long uptimeMillis)
-    {
-        boolean sent = false;
-        MessageQueue queue = mQueue;
-        if (queue != null) {
-            msg.target = this;
-            sent = queue.enqueueMessage(msg, uptimeMillis);
-        }
-        else {
-            RuntimeException e = new RuntimeException(
-                this + " sendMessageAtTime() called with no mQueue");
-            Log.w("Looper", e.getMessage(), e);
-        }
-        return sent;
-    }
+	/**
+	 * Remove any pending posts of Runnable <var>r</var> with Object
+	 * <var>token</var> that are in the message queue.
+	 */
+	public final void removeCallbacks(Runnable r, Object token) {
+		mQueue.removeMessages(this, r, token);
+	}
 
-    /**
-     * Enqueue a message at the front of the message queue, to be processed on
-     * the next iteration of the message loop.  You will receive it in
-     * {@link #handleMessage}, in the thread attached to this handler.
-     * <b>This method is only for use in very special circumstances -- it
-     * can easily starve the message queue, cause ordering problems, or have
-     * other unexpected side-effects.</b>
-     *  
-     * @return Returns true if the message was successfully placed in to the 
-     *         message queue.  Returns false on failure, usually because the
-     *         looper processing the message queue is exiting.
-     */
-    public final boolean sendMessageAtFrontOfQueue(Message msg)
-    {
-        boolean sent = false;
-        MessageQueue queue = mQueue;
-        if (queue != null) {
-            msg.target = this;
-            sent = queue.enqueueMessage(msg, 0);
-        }
-        else {
-            RuntimeException e = new RuntimeException(
-                this + " sendMessageAtTime() called with no mQueue");
-            Log.w("Looper", e.getMessage(), e);
-        }
-        return sent;
-    }
+	/**
+	 * 将message放到message queue末尾。该消息将被与本对象相关的thread的handleMessage接受
+	 * Pushes a message onto the end of the message queue after all pending
+	 * messages before the current time. It will be received in
+	 * {@link #handleMessage}, in the thread attached to this handler.
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean sendMessage(Message msg) {
+		return sendMessageDelayed(msg, 0);
+	}
 
-    /**
-     * Remove any pending posts of messages with code 'what' that are in the
-     * message queue.
-     */
-    public final void removeMessages(int what) {
-        mQueue.removeMessages(this, what, null, true);
-    }
+	/**
+	 * Sends a Message containing only the what value.
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean sendEmptyMessage(int what) {
+		return sendEmptyMessageDelayed(what, 0);
+	}
 
-    /**
-     * Remove any pending posts of messages with code 'what' and whose obj is
-     * 'object' that are in the message queue.
-     */
-    public final void removeMessages(int what, Object object) {
-        mQueue.removeMessages(this, what, object, true);
-    }
+	/**
+	 * Sends a Message containing only the what value, to be delivered after the
+	 * specified amount of time elapses.
+	 * 
+	 * @see #sendMessageDelayed(android.os.Message, long)
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
+		Message msg = Message.obtain();
+		msg.what = what;
+		return sendMessageDelayed(msg, delayMillis);
+	}
 
-    /**
-     * Remove any pending posts of callbacks and sent messages whose
-     * <var>obj</var> is <var>token</var>.
-     */
-    public final void removeCallbacksAndMessages(Object token) {
-        mQueue.removeCallbacksAndMessages(this, token);
-    }
+	/**
+	 * Sends a Message containing only the what value, to be delivered at a
+	 * specific time.
+	 * 
+	 * @see #sendMessageAtTime(android.os.Message, long)
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
 
-    /**
-     * Check if there are any pending posts of messages with code 'what' in
-     * the message queue.
-     */
-    public final boolean hasMessages(int what) {
-        return mQueue.removeMessages(this, what, null, false);
-    }
+	public final boolean sendEmptyMessageAtTime(int what, long uptimeMillis) {
+		Message msg = Message.obtain();
+		msg.what = what;
+		return sendMessageAtTime(msg, uptimeMillis);
+	}
 
-    /**
-     * Check if there are any pending posts of messages with code 'what' and
-     * whose obj is 'object' in the message queue.
-     */
-    public final boolean hasMessages(int what, Object object) {
-        return mQueue.removeMessages(this, what, object, false);
-    }
+	/**
+	 * Enqueue a message into the message queue after all pending messages
+	 * before (current time + delayMillis). You will receive it in
+	 * {@link #handleMessage}, in the thread attached to this handler.
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting. Note that a
+	 *         result of true does not mean the message will be processed -- if
+	 *         the looper is quit before the delivery time of the message occurs
+	 *         then the message will be dropped.
+	 */
+	public final boolean sendMessageDelayed(Message msg, long delayMillis) {
+		if (delayMillis < 0) {
+			delayMillis = 0;
+		}
+		return sendMessageAtTime(msg, SystemClock.uptimeMillis() + delayMillis);
+	}
 
-    // if we can get rid of this method, the handler need not remember its loop
-    // we could instead export a getMessageQueue() method... 
-    public final Looper getLooper() {
-        return mLooper;
-    }
+	/**
+	 * 将message放到消息队列中并在指定事件执行message。
+	 * Enqueue a message into the message queue after all pending messages
+	 * before the absolute time (in milliseconds) <var>uptimeMillis</var>.
+	 * <b>The time-base is {@link android.os.SystemClock#uptimeMillis}.</b> You
+	 * will receive it in {@link #handleMessage}, in the thread attached to this
+	 * handler.
+	 * 
+	 * @param uptimeMillis
+	 *            The absolute time at which the message should be delivered,
+	 *            using the {@link android.os.SystemClock#uptimeMillis}
+	 *            time-base.
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting. Note that a
+	 *         result of true does not mean the message will be processed -- if
+	 *         the looper is quit before the delivery time of the message occurs
+	 *         then the message will be dropped.
+	 */
+	public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
+		boolean sent = false;
+		MessageQueue queue = mQueue;
+		if (queue != null) {
+			msg.target = this;
+			//将消息插入队列中
+			sent = queue.enqueueMessage(msg, uptimeMillis);
+		} else {
+			RuntimeException e = new RuntimeException(this
+					+ " sendMessageAtTime() called with no mQueue");
+			Log.w("Looper", e.getMessage(), e);
+		}
+		return sent;
+	}
 
-    public final void dump(Printer pw, String prefix) {
-        pw.println(prefix + this + " @ " + SystemClock.uptimeMillis());
-        if (mLooper == null) {
-            pw.println(prefix + "looper uninitialized");
-        } else {
-            mLooper.dump(pw, prefix + "  ");
-        }
-    }
+	/**
+	 * Enqueue a message at the front of the message queue, to be processed on
+	 * the next iteration of the message loop. You will receive it in
+	 * {@link #handleMessage}, in the thread attached to this handler. <b>This
+	 * method is only for use in very special circumstances -- it can easily
+	 * starve the message queue, cause ordering problems, or have other
+	 * unexpected side-effects.</b>
+	 * 
+	 * @return Returns true if the message was successfully placed in to the
+	 *         message queue. Returns false on failure, usually because the
+	 *         looper processing the message queue is exiting.
+	 */
+	public final boolean sendMessageAtFrontOfQueue(Message msg) {
+		boolean sent = false;
+		MessageQueue queue = mQueue;
+		if (queue != null) {
+			msg.target = this;
+			sent = queue.enqueueMessage(msg, 0);
+		} else {
+			RuntimeException e = new RuntimeException(this
+					+ " sendMessageAtTime() called with no mQueue");
+			Log.w("Looper", e.getMessage(), e);
+		}
+		return sent;
+	}
 
-    @Override
-    public String toString() {
-        return "Handler{"
-        + Integer.toHexString(System.identityHashCode(this))
-        + "}";
-    }
+	/**
+	 * Remove any pending posts of messages with code 'what' that are in the
+	 * message queue.
+	 * <br>从队列中移除消息
+	 */
+	public final void removeMessages(int what) {
+		mQueue.removeMessages(this, what, null, true);
+	}
 
-    final IMessenger getIMessenger() {
-        synchronized (mQueue) {
-            if (mMessenger != null) {
-                return mMessenger;
-            }
-            mMessenger = new MessengerImpl();
-            return mMessenger;
-        }
-    }
-    
-    private final class MessengerImpl extends IMessenger.Stub {
-        public void send(Message msg) {
-            Handler.this.sendMessage(msg);
-        }
-    }
-    
-    private final Message getPostMessage(Runnable r) {
-        Message m = Message.obtain();
-        m.callback = r;
-        return m;
-    }
+	/**
+	 * Remove any pending posts of messages with code 'what' and whose obj is
+	 * 'object' that are in the message queue.
+	 */
+	public final void removeMessages(int what, Object object) {
+		mQueue.removeMessages(this, what, object, true);
+	}
 
-    private final Message getPostMessage(Runnable r, Object token) {
-        Message m = Message.obtain();
-        m.obj = token;
-        m.callback = r;
-        return m;
-    }
+	/**
+	 * Remove any pending posts of callbacks and sent messages whose
+	 * <var>obj</var> is <var>token</var>.
+	 */
+	public final void removeCallbacksAndMessages(Object token) {
+		mQueue.removeCallbacksAndMessages(this, token);
+	}
 
-    private final void handleCallback(Message message) {
-        message.callback.run();
-    }
+	/**
+	 * Check if there are any pending posts of messages with code 'what' in the
+	 * message queue.
+	 * <br>判断是否存在指定code的消息
+	 */
+	public final boolean hasMessages(int what) {
+		return mQueue.removeMessages(this, what, null, false);
+	}
 
-    final MessageQueue mQueue;
-    final Looper mLooper;
-    final Callback mCallback;
-    IMessenger mMessenger;
+	/**
+	 * Check if there are any pending posts of messages with code 'what' and
+	 * whose obj is 'object' in the message queue.
+	 */
+	public final boolean hasMessages(int what, Object object) {
+		return mQueue.removeMessages(this, what, object, false);
+	}
+
+	// if we can get rid of this method, the handler need not remember its loop
+	// we could instead export a getMessageQueue() method...
+	public final Looper getLooper() {
+		return mLooper;
+	}
+
+	public final void dump(Printer pw, String prefix) {
+		pw.println(prefix + this + " @ " + SystemClock.uptimeMillis());
+		if (mLooper == null) {
+			pw.println(prefix + "looper uninitialized");
+		} else {
+			mLooper.dump(pw, prefix + "  ");
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "Handler{" + Integer.toHexString(System.identityHashCode(this))
+				+ "}";
+	}
+
+	final IMessenger getIMessenger() {
+		synchronized (mQueue) {
+			if (mMessenger != null) {
+				return mMessenger;
+			}
+			mMessenger = new MessengerImpl();
+			return mMessenger;
+		}
+	}
+
+	private final class MessengerImpl extends IMessenger.Stub {
+		public void send(Message msg) {
+			Handler.this.sendMessage(msg);
+		}
+	}
+
+	private final Message getPostMessage(Runnable r) {
+		Message m = Message.obtain();
+		m.callback = r;
+		return m;
+	}
+
+	/**
+	 * 获取一个新的message，并指定runnable，和obj
+	 * @param r
+	 * @param token
+	 * @return
+	 */
+	private final Message getPostMessage(Runnable r, Object token) {
+		Message m = Message.obtain();
+		m.obj = token;
+		m.callback = r;
+		return m;
+	}
+	
+	/**
+	 * 执行message的callback
+	 * @param message
+	 */
+	private final void handleCallback(Message message) {
+		message.callback.run();
+	}
+	
+	/**
+	 * 消息队列
+	 */
+	final MessageQueue mQueue;
+	/**
+	 * 消息泵
+	 */
+	final Looper mLooper;
+	/**
+	 * 避免子类化的 回调
+	 */
+	final Callback mCallback;
+	IMessenger mMessenger;
 }
