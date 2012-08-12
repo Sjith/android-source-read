@@ -24,12 +24,14 @@ import android.view.LayoutInflater;
 
 
 /**
+ * 一个方便的adapter，使用xml文件创建view，可以指定在view使用xml来定义子项的显示方式。
  * An easy adapter that creates views defined in an XML file. You can specify
  * the XML file that defines the appearance of the views.
  */
 public abstract class ResourceCursorAdapter extends CursorAdapter {
+	//显示的子项的id号
     private int mLayout;
-
+    //显示的dorpdown使用的view的资源id号
     private int mDropDownLayout;
     
     private LayoutInflater mInflater;

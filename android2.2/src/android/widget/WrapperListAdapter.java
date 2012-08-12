@@ -17,6 +17,8 @@
 package android.widget;
 
 /**
+ * 包含其他ListAdapter的listadapter
+ * <br>
  * List adapter that wraps another list adapter. The wrapped adapter can be retrieved
  * by calling {@link #getWrappedAdapter()}.
  *

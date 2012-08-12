@@ -28,7 +28,8 @@ import java.util.Map;
 
 /**
  * 将固定数据映射到用xml文件定义的view的一种简单adapter。可以讲数据定义为Map的list数组，
- * ArrayList中的每一个元素对应于List中的一行， 你同时可以指定一个xml文件用于显示每一行，并且可以从map中将key映射为view。<br>
+ * ArrayList中的每一个元素对应于List中的一行， 你同时可以指定一个xml文件用于显示每一行，并且可以从map中将key映射为view。
+ * 由于Map数组的映射<br>
  * An easy adapter to map static data to views defined in an XML file. You can
  * specify the data backing the list as an ArrayList of Maps. Each entry in the
  * ArrayList corresponds to one row in the list. The Maps contain the data for
@@ -316,7 +317,7 @@ public class SimpleAdapter extends BaseAdapter implements Filterable {
 	}
 
 	/**
-	 * 该类可以被SimpleAdapter外部客户端用作将值绑定到view。
+	 * 该类可以被SimpleAdapter使用者用作将值绑定到view。
 	 * 当不支持SimpleAdapter或者支持SimpleAdapter但是想修改绑定方式的时候使用此类将值绑定到view。 <br>
 	 * This class can be used by external clients of SimpleAdapter to bind
 	 * values to views.

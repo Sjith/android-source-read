@@ -17,7 +17,7 @@
 package android.widget;
 
 /**
- * 定义了可过滤行为，该类使得其数据能够被过滤器限制，通常被Adapter实现
+ * 定义了过滤行为，该类使得其数据能够被过滤器限制，通常被Adapter实现
  * <br>
  * <p>Defines a filterable behavior. A filterable class can have its data
  * constrained by a filter. Filterable classes are usually
