@@ -26,7 +26,7 @@ import android.util.Log;
 
 
 /**
- * apps用来与window manager进行通话的接口
+ * apps用来与window manager进行通话的接口,需要使用Context.getSystemService(Context.WINDOW_SERVICE)来获取WindowManager实例。
  * The interface that apps use to talk to the window manager.
  * <p>
  * Use <code>Context.getSystemService(Context.WINDOW_SERVICE)</code> to get one of these.
@@ -66,6 +66,11 @@ public interface WindowManager extends ViewManager {
      */
     public void removeViewImmediate(View view);
     
+    /**
+     * WindowManager布局参数
+     * @author Administrator
+     *
+     */
     public static class LayoutParams extends ViewGroup.LayoutParams
             implements Parcelable {
         /**
