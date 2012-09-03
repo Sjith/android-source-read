@@ -19,6 +19,8 @@ package android.content;
 import android.content.res.Configuration;
 
 /**
+ * 所有应用程序组件Activity,Service,ContentProvider,Application通用的回调api
+ * <br>
  * The set of callback APIs that are common to all application components
  * ({@link android.app.Activity}, {@link android.app.Service},
  * {@link ContentProvider}, and {@link android.app.Application}).

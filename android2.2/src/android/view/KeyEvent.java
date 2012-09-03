@@ -25,6 +25,7 @@ import android.view.KeyCharacterMap.KeyData;
 
 /**
  * Contains constants for key events.
+ * <br>key事件的常数集合
  */
 public class KeyEvent implements Parcelable {
     // key codes

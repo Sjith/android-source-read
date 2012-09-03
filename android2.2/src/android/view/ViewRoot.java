@@ -59,6 +59,9 @@ import javax.microedition.khronos.opengles.*;
 import static javax.microedition.khronos.opengles.GL10.*;
 
 /**
+ * view层次的顶部，实现了再View和WindowManager之间需要的协议。是{@link WindowManagerImpl}
+ * 大部分函数的实现。是View和WindowManager之间的桥梁
+ * <br>
  * The top of a view hierarchy, implementing the needed protocol between View
  * and the WindowManager.  This is for the most part an internal implementation
  * detail of {@link WindowManagerImpl}.
@@ -98,7 +101,9 @@ public final class ViewRoot extends Handler implements ViewParent,
 
     static final Object mStaticInit = new Object();
     static boolean mInitialized = false;
-
+    /**
+     * RunQueue的本地线程变量
+     */
     static final ThreadLocal<RunQueue> sRunQueues = new ThreadLocal<RunQueue>();
 
     static final ArrayList<Runnable> sFirstDrawHandlers = new ArrayList<Runnable>();
@@ -132,7 +137,7 @@ public final class ViewRoot extends Handler implements ViewParent,
     View mRealFocusedView;  // this is not set to null in touch mode
     int mViewVisibility;
     boolean mAppVisible = true;
-
+    
     final Region mTransparentRegion;
     final Region mPreviousTransparentRegion;
 
@@ -3272,6 +3277,7 @@ public final class ViewRoot extends Handler implements ViewParent,
 
     /**
      * @hide
+     * 需要运行的队列
      */
     static final class RunQueue {
         private final ArrayList<HandlerAction> mActions = new ArrayList<HandlerAction>();
@@ -3316,7 +3322,11 @@ public final class ViewRoot extends Handler implements ViewParent,
                 actions.clear();
             }
         }
-
+        /**
+         * 需要执行的Action，其实就是一个Handler
+         * @author wangsongye
+         *
+         */
         private static class HandlerAction {
             Runnable action;
             long delay;

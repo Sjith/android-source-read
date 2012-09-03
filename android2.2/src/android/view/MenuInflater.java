@@ -31,6 +31,7 @@ import android.util.AttributeSet;
 import android.util.Xml;
 
 /**
+ * 讲一个menu的xml文件转为一个Menu对象。 <br>
  * This class is used to instantiate menu XML files into Menu objects.
  * <p>
  * For performance reasons, menu inflation relies heavily on pre-processing of
@@ -40,286 +41,318 @@ import android.util.Xml;
  * <em>something</em> file.)
  */
 public class MenuInflater {
-    /** Menu tag name in XML. */
-    private static final String XML_MENU = "menu";
-    
-    /** Group tag name in XML. */
-    private static final String XML_GROUP = "group";
-    
-    /** Item tag name in XML. */
-    private static final String XML_ITEM = "item";
+	/** Menu tag name in XML. */
+	private static final String XML_MENU = "menu";
 
-    private static final int NO_ID = 0;
-    
-    private Context mContext;
-    
-    /**
-     * Constructs a menu inflater.
-     * 
-     * @see Activity#getMenuInflater()
-     */
-    public MenuInflater(Context context) {
-        mContext = context;
-    }
+	/** Group tag name in XML. */
+	private static final String XML_GROUP = "group";
 
-    /**
-     * Inflate a menu hierarchy from the specified XML resource. Throws
-     * {@link InflateException} if there is an error.
-     * 
-     * @param menuRes Resource ID for an XML layout resource to load (e.g.,
-     *            <code>R.menu.main_activity</code>)
-     * @param menu The Menu to inflate into. The items and submenus will be
-     *            added to this Menu.
-     */
-    public void inflate(int menuRes, Menu menu) {
-        XmlResourceParser parser = null;
-        try {
-            parser = mContext.getResources().getLayout(menuRes);
-            AttributeSet attrs = Xml.asAttributeSet(parser);
-            
-            parseMenu(parser, attrs, menu);
-        } catch (XmlPullParserException e) {
-            throw new InflateException("Error inflating menu XML", e);
-        } catch (IOException e) {
-            throw new InflateException("Error inflating menu XML", e);
-        } finally {
-            if (parser != null) parser.close();
-        }
-    }
+	/** Item tag name in XML. */
+	private static final String XML_ITEM = "item";
 
-    /**
-     * Called internally to fill the given menu. If a sub menu is seen, it will
-     * call this recursively.
-     */
-    private void parseMenu(XmlPullParser parser, AttributeSet attrs, Menu menu)
-            throws XmlPullParserException, IOException {
-        MenuState menuState = new MenuState(menu);
+	private static final int NO_ID = 0;
 
-        int eventType = parser.getEventType();
-        String tagName;
-        boolean lookingForEndOfUnknownTag = false;
-        String unknownTagName = null;
+	private Context mContext;
 
-        // This loop will skip to the menu start tag
-        do {
-            if (eventType == XmlPullParser.START_TAG) {
-                tagName = parser.getName();
-                if (tagName.equals(XML_MENU)) {
-                    // Go to next tag
-                    eventType = parser.next();
-                    break;
-                }
-                
-                throw new RuntimeException("Expecting menu, got " + tagName);
-            }
-            eventType = parser.next();
-        } while (eventType != XmlPullParser.END_DOCUMENT);
-        
-        boolean reachedEndOfMenu = false;
-        while (!reachedEndOfMenu) {
-            switch (eventType) {
-                case XmlPullParser.START_TAG:
-                    if (lookingForEndOfUnknownTag) {
-                        break;
-                    }
-                    
-                    tagName = parser.getName();
-                    if (tagName.equals(XML_GROUP)) {
-                        menuState.readGroup(attrs);
-                    } else if (tagName.equals(XML_ITEM)) {
-                        menuState.readItem(attrs);
-                    } else if (tagName.equals(XML_MENU)) {
-                        // A menu start tag denotes a submenu for an item
-                        SubMenu subMenu = menuState.addSubMenuItem();
+	/**
+	 * Constructs a menu inflater.
+	 * 
+	 * @see Activity#getMenuInflater()
+	 */
+	public MenuInflater(Context context) {
+		mContext = context;
+	}
 
-                        // Parse the submenu into returned SubMenu
-                        parseMenu(parser, attrs, subMenu);
-                    } else {
-                        lookingForEndOfUnknownTag = true;
-                        unknownTagName = tagName;
-                    }
-                    break;
-                    
-                case XmlPullParser.END_TAG:
-                    tagName = parser.getName();
-                    if (lookingForEndOfUnknownTag && tagName.equals(unknownTagName)) {
-                        lookingForEndOfUnknownTag = false;
-                        unknownTagName = null;
-                    } else if (tagName.equals(XML_GROUP)) {
-                        menuState.resetGroup();
-                    } else if (tagName.equals(XML_ITEM)) {
-                        // Add the item if it hasn't been added (if the item was
-                        // a submenu, it would have been added already)
-                        if (!menuState.hasAddedItem()) {
-                            menuState.addItem();
-                        }
-                    } else if (tagName.equals(XML_MENU)) {
-                        reachedEndOfMenu = true;
-                    }
-                    break;
-                    
-                case XmlPullParser.END_DOCUMENT:
-                    throw new RuntimeException("Unexpected end of document");
-            }
-            
-            eventType = parser.next();
-        }
-    }
-    
-    /**
-     * State for the current menu.
-     * <p>
-     * Groups can not be nested unless there is another menu (which will have
-     * its state class).
-     */
-    private class MenuState {
-        private Menu menu;
+	/**
+	 * Inflate a menu hierarchy from the specified XML resource. Throws
+	 * {@link InflateException} if there is an error.
+	 * 
+	 * @param menuRes
+	 *            Resource ID for an XML layout resource to load (e.g.,
+	 *            <code>R.menu.main_activity</code>)
+	 * @param menu
+	 *            The Menu to inflate into. The items and submenus will be added
+	 *            to this Menu.
+	 */
+	public void inflate(int menuRes, Menu menu) {
+		XmlResourceParser parser = null;
+		try {
+			parser = mContext.getResources().getLayout(menuRes);
+			AttributeSet attrs = Xml.asAttributeSet(parser);
 
-        /*
-         * Group state is set on items as they are added, allowing an item to
-         * override its group state. (As opposed to set on items at the group end tag.)
-         */
-        private int groupId;
-        private int groupCategory;
-        private int groupOrder;
-        private int groupCheckable;
-        private boolean groupVisible;
-        private boolean groupEnabled;
+			parseMenu(parser, attrs, menu);
+		} catch (XmlPullParserException e) {
+			throw new InflateException("Error inflating menu XML", e);
+		} catch (IOException e) {
+			throw new InflateException("Error inflating menu XML", e);
+		} finally {
+			if (parser != null)
+				parser.close();
+		}
+	}
 
-        private boolean itemAdded;
-        private int itemId;
-        private int itemCategoryOrder;
-        private String itemTitle;
-        private String itemTitleCondensed;
-        private int itemIconResId;
-        private char itemAlphabeticShortcut;
-        private char itemNumericShortcut;
-        /**
-         * Sync to attrs.xml enum:
-         * - 0: none
-         * - 1: all
-         * - 2: exclusive
-         */
-        private int itemCheckable;
-        private boolean itemChecked;
-        private boolean itemVisible;
-        private boolean itemEnabled;
-        
-        private static final int defaultGroupId = NO_ID;
-        private static final int defaultItemId = NO_ID;
-        private static final int defaultItemCategory = 0;
-        private static final int defaultItemOrder = 0;
-        private static final int defaultItemCheckable = 0;
-        private static final boolean defaultItemChecked = false;
-        private static final boolean defaultItemVisible = true;
-        private static final boolean defaultItemEnabled = true;
-        
-        public MenuState(final Menu menu) {
-            this.menu = menu;
-            
-            resetGroup();
-        }
-        
-        public void resetGroup() {
-            groupId = defaultGroupId;
-            groupCategory = defaultItemCategory;
-            groupOrder = defaultItemOrder;
-            groupCheckable = defaultItemCheckable;
-            groupVisible = defaultItemVisible;
-            groupEnabled = defaultItemEnabled;
-        }
+	/**
+	 * Called internally to fill the given menu. If a sub menu is seen, it will
+	 * call this recursively.
+	 */
+	private void parseMenu(XmlPullParser parser, AttributeSet attrs, Menu menu)
+			throws XmlPullParserException, IOException {
+		MenuState menuState = new MenuState(menu);
 
-        /**
-         * Called when the parser is pointing to a group tag.
-         */
-        public void readGroup(AttributeSet attrs) {
-            TypedArray a = mContext.obtainStyledAttributes(attrs,
-                    com.android.internal.R.styleable.MenuGroup);
-            
-            groupId = a.getResourceId(com.android.internal.R.styleable.MenuGroup_id, defaultGroupId);
-            groupCategory = a.getInt(com.android.internal.R.styleable.MenuGroup_menuCategory, defaultItemCategory);
-            groupOrder = a.getInt(com.android.internal.R.styleable.MenuGroup_orderInCategory, defaultItemOrder);
-            groupCheckable = a.getInt(com.android.internal.R.styleable.MenuGroup_checkableBehavior, defaultItemCheckable);
-            groupVisible = a.getBoolean(com.android.internal.R.styleable.MenuGroup_visible, defaultItemVisible);
-            groupEnabled = a.getBoolean(com.android.internal.R.styleable.MenuGroup_enabled, defaultItemEnabled);
+		int eventType = parser.getEventType();
+		String tagName;
+		boolean lookingForEndOfUnknownTag = false;
+		String unknownTagName = null;
 
-            a.recycle();
-        }
-        
-        /**
-         * Called when the parser is pointing to an item tag.
-         */
-        public void readItem(AttributeSet attrs) {
-            TypedArray a = mContext.obtainStyledAttributes(attrs,
-                    com.android.internal.R.styleable.MenuItem);
+		// This loop will skip to the menu start tag
+		do {
+			if (eventType == XmlPullParser.START_TAG) {
+				tagName = parser.getName();
+				if (tagName.equals(XML_MENU)) {
+					// Go to next tag
+					eventType = parser.next();
+					break;
+				}
 
-            // Inherit attributes from the group as default value
-            itemId = a.getResourceId(com.android.internal.R.styleable.MenuItem_id, defaultItemId);
-            final int category = a.getInt(com.android.internal.R.styleable.MenuItem_menuCategory, groupCategory);
-            final int order = a.getInt(com.android.internal.R.styleable.MenuItem_orderInCategory, groupOrder);
-            itemCategoryOrder = (category & Menu.CATEGORY_MASK) | (order & Menu.USER_MASK);
-            itemTitle = a.getString(com.android.internal.R.styleable.MenuItem_title);
-            itemTitleCondensed = a.getString(com.android.internal.R.styleable.MenuItem_titleCondensed);
-            itemIconResId = a.getResourceId(com.android.internal.R.styleable.MenuItem_icon, 0);
-            itemAlphabeticShortcut =
-                    getShortcut(a.getString(com.android.internal.R.styleable.MenuItem_alphabeticShortcut));
-            itemNumericShortcut =
-                    getShortcut(a.getString(com.android.internal.R.styleable.MenuItem_numericShortcut));
-            if (a.hasValue(com.android.internal.R.styleable.MenuItem_checkable)) {
-                // Item has attribute checkable, use it
-                itemCheckable = a.getBoolean(com.android.internal.R.styleable.MenuItem_checkable, false) ? 1 : 0;
-            } else {
-                // Item does not have attribute, use the group's (group can have one more state
-                // for checkable that represents the exclusive checkable)
-                itemCheckable = groupCheckable;
-            }
-            itemChecked = a.getBoolean(com.android.internal.R.styleable.MenuItem_checked, defaultItemChecked);
-            itemVisible = a.getBoolean(com.android.internal.R.styleable.MenuItem_visible, groupVisible);
-            itemEnabled = a.getBoolean(com.android.internal.R.styleable.MenuItem_enabled, groupEnabled);
-            
-            a.recycle();
-            
-            itemAdded = false;
-        }
+				throw new RuntimeException("Expecting menu, got " + tagName);
+			}
+			eventType = parser.next();
+		} while (eventType != XmlPullParser.END_DOCUMENT);
 
-        private char getShortcut(String shortcutString) {
-            if (shortcutString == null) {
-                return 0;
-            } else {
-                return shortcutString.charAt(0);
-            }
-        }
-        
-        private void setItem(MenuItem item) {
-            item.setChecked(itemChecked)
-                .setVisible(itemVisible)
-                .setEnabled(itemEnabled)
-                .setCheckable(itemCheckable >= 1)
-                .setTitleCondensed(itemTitleCondensed)
-                .setIcon(itemIconResId)
-                .setAlphabeticShortcut(itemAlphabeticShortcut)
-                .setNumericShortcut(itemNumericShortcut);
+		boolean reachedEndOfMenu = false;
+		while (!reachedEndOfMenu) {
+			switch (eventType) {
+			case XmlPullParser.START_TAG:
+				if (lookingForEndOfUnknownTag) {
+					break;
+				}
 
-            if (itemCheckable >= 2) {
-                ((MenuItemImpl) item).setExclusiveCheckable(true);
-            }
-        }
-        
-        public void addItem() {
-            itemAdded = true;
-            setItem(menu.add(groupId, itemId, itemCategoryOrder, itemTitle));
-        }
-        
-        public SubMenu addSubMenuItem() {
-            itemAdded = true;
-            SubMenu subMenu = menu.addSubMenu(groupId, itemId, itemCategoryOrder, itemTitle);
-            setItem(subMenu.getItem());
-            return subMenu;
-        }
-        
-        public boolean hasAddedItem() {
-            return itemAdded;
-        }
-    }
-    
+				tagName = parser.getName();
+				if (tagName.equals(XML_GROUP)) {
+					menuState.readGroup(attrs);
+				} else if (tagName.equals(XML_ITEM)) {
+					menuState.readItem(attrs);
+				} else if (tagName.equals(XML_MENU)) {
+					// A menu start tag denotes a submenu for an item
+					SubMenu subMenu = menuState.addSubMenuItem();
+
+					// Parse the submenu into returned SubMenu
+					parseMenu(parser, attrs, subMenu);
+				} else {
+					lookingForEndOfUnknownTag = true;
+					unknownTagName = tagName;
+				}
+				break;
+
+			case XmlPullParser.END_TAG:
+				tagName = parser.getName();
+				if (lookingForEndOfUnknownTag && tagName.equals(unknownTagName)) {
+					lookingForEndOfUnknownTag = false;
+					unknownTagName = null;
+				} else if (tagName.equals(XML_GROUP)) {
+					menuState.resetGroup();
+				} else if (tagName.equals(XML_ITEM)) {
+					// Add the item if it hasn't been added (if the item was
+					// a submenu, it would have been added already)
+					if (!menuState.hasAddedItem()) {
+						menuState.addItem();
+					}
+				} else if (tagName.equals(XML_MENU)) {
+					reachedEndOfMenu = true;
+				}
+				break;
+
+			case XmlPullParser.END_DOCUMENT:
+				throw new RuntimeException("Unexpected end of document");
+			}
+
+			eventType = parser.next();
+		}
+	}
+
+	/**
+	 * State for the current menu.
+	 * <p>
+	 * Groups can not be nested unless there is another menu (which will have
+	 * its state class).
+	 */
+	private class MenuState {
+		private Menu menu;
+
+		/*
+		 * Group state is set on items as they are added, allowing an item to
+		 * override its group state. (As opposed to set on items at the group
+		 * end tag.)
+		 */
+		private int groupId;
+		private int groupCategory;
+		private int groupOrder;
+		private int groupCheckable;
+		private boolean groupVisible;
+		private boolean groupEnabled;
+
+		private boolean itemAdded;
+		private int itemId;
+		private int itemCategoryOrder;
+		private String itemTitle;
+		private String itemTitleCondensed;
+		private int itemIconResId;
+		private char itemAlphabeticShortcut;
+		private char itemNumericShortcut;
+		/**
+		 * Sync to attrs.xml enum: - 0: none - 1: all - 2: exclusive
+		 */
+		private int itemCheckable;
+		private boolean itemChecked;
+		private boolean itemVisible;
+		private boolean itemEnabled;
+
+		private static final int defaultGroupId = NO_ID;
+		private static final int defaultItemId = NO_ID;
+		private static final int defaultItemCategory = 0;
+		private static final int defaultItemOrder = 0;
+		private static final int defaultItemCheckable = 0;
+		private static final boolean defaultItemChecked = false;
+		private static final boolean defaultItemVisible = true;
+		private static final boolean defaultItemEnabled = true;
+
+		public MenuState(final Menu menu) {
+			this.menu = menu;
+
+			resetGroup();
+		}
+
+		public void resetGroup() {
+			groupId = defaultGroupId;
+			groupCategory = defaultItemCategory;
+			groupOrder = defaultItemOrder;
+			groupCheckable = defaultItemCheckable;
+			groupVisible = defaultItemVisible;
+			groupEnabled = defaultItemEnabled;
+		}
+
+		/**
+		 * Called when the parser is pointing to a group tag.
+		 */
+		public void readGroup(AttributeSet attrs) {
+			TypedArray a = mContext.obtainStyledAttributes(attrs,
+					com.android.internal.R.styleable.MenuGroup);
+
+			groupId = a.getResourceId(
+					com.android.internal.R.styleable.MenuGroup_id,
+					defaultGroupId);
+			groupCategory = a.getInt(
+					com.android.internal.R.styleable.MenuGroup_menuCategory,
+					defaultItemCategory);
+			groupOrder = a.getInt(
+					com.android.internal.R.styleable.MenuGroup_orderInCategory,
+					defaultItemOrder);
+			groupCheckable = a
+					.getInt(com.android.internal.R.styleable.MenuGroup_checkableBehavior,
+							defaultItemCheckable);
+			groupVisible = a.getBoolean(
+					com.android.internal.R.styleable.MenuGroup_visible,
+					defaultItemVisible);
+			groupEnabled = a.getBoolean(
+					com.android.internal.R.styleable.MenuGroup_enabled,
+					defaultItemEnabled);
+
+			a.recycle();
+		}
+
+		/**
+		 * Called when the parser is pointing to an item tag.
+		 */
+		public void readItem(AttributeSet attrs) {
+			TypedArray a = mContext.obtainStyledAttributes(attrs,
+					com.android.internal.R.styleable.MenuItem);
+
+			// Inherit attributes from the group as default value
+			itemId = a
+					.getResourceId(
+							com.android.internal.R.styleable.MenuItem_id,
+							defaultItemId);
+			final int category = a.getInt(
+					com.android.internal.R.styleable.MenuItem_menuCategory,
+					groupCategory);
+			final int order = a.getInt(
+					com.android.internal.R.styleable.MenuItem_orderInCategory,
+					groupOrder);
+			itemCategoryOrder = (category & Menu.CATEGORY_MASK)
+					| (order & Menu.USER_MASK);
+			itemTitle = a
+					.getString(com.android.internal.R.styleable.MenuItem_title);
+			itemTitleCondensed = a
+					.getString(com.android.internal.R.styleable.MenuItem_titleCondensed);
+			itemIconResId = a.getResourceId(
+					com.android.internal.R.styleable.MenuItem_icon, 0);
+			itemAlphabeticShortcut = getShortcut(a
+					.getString(com.android.internal.R.styleable.MenuItem_alphabeticShortcut));
+			itemNumericShortcut = getShortcut(a
+					.getString(com.android.internal.R.styleable.MenuItem_numericShortcut));
+			if (a.hasValue(com.android.internal.R.styleable.MenuItem_checkable)) {
+				// Item has attribute checkable, use it
+				itemCheckable = a.getBoolean(
+						com.android.internal.R.styleable.MenuItem_checkable,
+						false) ? 1 : 0;
+			} else {
+				// Item does not have attribute, use the group's (group can have
+				// one more state
+				// for checkable that represents the exclusive checkable)
+				itemCheckable = groupCheckable;
+			}
+			itemChecked = a.getBoolean(
+					com.android.internal.R.styleable.MenuItem_checked,
+					defaultItemChecked);
+			itemVisible = a.getBoolean(
+					com.android.internal.R.styleable.MenuItem_visible,
+					groupVisible);
+			itemEnabled = a.getBoolean(
+					com.android.internal.R.styleable.MenuItem_enabled,
+					groupEnabled);
+
+			a.recycle();
+
+			itemAdded = false;
+		}
+
+		private char getShortcut(String shortcutString) {
+			if (shortcutString == null) {
+				return 0;
+			} else {
+				return shortcutString.charAt(0);
+			}
+		}
+
+		private void setItem(MenuItem item) {
+			item.setChecked(itemChecked).setVisible(itemVisible)
+					.setEnabled(itemEnabled).setCheckable(itemCheckable >= 1)
+					.setTitleCondensed(itemTitleCondensed)
+					.setIcon(itemIconResId)
+					.setAlphabeticShortcut(itemAlphabeticShortcut)
+					.setNumericShortcut(itemNumericShortcut);
+
+			if (itemCheckable >= 2) {
+				((MenuItemImpl) item).setExclusiveCheckable(true);
+			}
+		}
+
+		public void addItem() {
+			itemAdded = true;
+			setItem(menu.add(groupId, itemId, itemCategoryOrder, itemTitle));
+		}
+
+		public SubMenu addSubMenuItem() {
+			itemAdded = true;
+			SubMenu subMenu = menu.addSubMenu(groupId, itemId,
+					itemCategoryOrder, itemTitle);
+			setItem(subMenu.getItem());
+			return subMenu;
+		}
+
+		public boolean hasAddedItem() {
+			return itemAdded;
+		}
+	}
+
 }

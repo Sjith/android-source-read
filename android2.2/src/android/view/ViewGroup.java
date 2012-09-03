@@ -3452,6 +3452,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
+     * LayoutParams被Views用来告诉他们的父View他们需要被如何放置。
+     * <br>
      * LayoutParams are used by views to tell their parents how they want to be
      * laid out. See
      * {@link android.R.styleable#ViewGroup_Layout ViewGroup Layout Attributes}
@@ -3631,6 +3633,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
+     * margin布局
+     * <br>
      * Per-child layout information for layouts that support margins.
      * See
      * {@link android.R.styleable#ViewGroup_MarginLayout ViewGroup Margin Layout Attributes}

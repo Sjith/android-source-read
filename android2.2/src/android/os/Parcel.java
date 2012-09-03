@@ -37,13 +37,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 
  * Container for a message (data and object references) that can be sent through
  * an IBinder. A Parcel can contain both flattened data that will be unflattened
  * on the other side of the IPC (using the various methods here for writing
  * specific types, or the general {@link Parcelable} interface), and references
  * to live {@link IBinder} objects that will result in the other side receiving
  * a proxy IBinder connected with the original IBinder in the Parcel. 
- * <br> 包含了需要发送到IBinder的消息。
+ * <br> 包含了需要发送到IBinder的消息(数据或者对象引用)。
  * <p class="note">
  * Parcel is <strong>not</strong> a general-purpose serialization mechanism.
  * This class (and the corresponding {@link Parcelable} API for placing

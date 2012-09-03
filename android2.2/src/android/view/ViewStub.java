@@ -26,6 +26,8 @@ import com.android.internal.R;
 import java.lang.ref.WeakReference;
 
 /**
+ * ViewStub是一个不可见的0，size为0的view，可以在运行时再进行inflate
+ * <br>
  * A ViewStub is an invisible, zero-sized View that can be used to lazily inflate
  * layout resources at runtime.
  *

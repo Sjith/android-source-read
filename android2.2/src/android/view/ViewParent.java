@@ -34,7 +34,7 @@ public interface ViewParent {
 
 	/**
 	 * Indicates whether layout was requested on this view parent.
-	 * 
+	 * 标识是否某个layout请求焦点
 	 * @return true if layout was requested, false otherwise
 	 */
 	public boolean isLayoutRequested();
@@ -55,7 +55,7 @@ public interface ViewParent {
 
 	/**
 	 * All or part of a child is dirty and needs to be redrawn.
-	 * 
+	 * <br>更新所有的子View
 	 * @param child
 	 *            The child which is dirty
 	 * @param r
@@ -89,7 +89,7 @@ public interface ViewParent {
 
 	/**
 	 * Returns the parent if it exists, or null.
-	 * 
+	 * <br>获取parent
 	 * @return a ViewParent or null if this ViewParent does not have a parent
 	 */
 	public ViewParent getParent();

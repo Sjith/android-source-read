@@ -24,6 +24,11 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+/**
+ * window 泄露异常
+ * @author wangsongye
+ *
+ */
 final class WindowLeaked extends AndroidRuntimeException {
     public WindowLeaked(String msg) {
         super(msg);

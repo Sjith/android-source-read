@@ -589,15 +589,20 @@ import java.util.WeakHashMap;
  */
 public class View implements Drawable.Callback, KeyEvent.Callback,
 		AccessibilityEventSource {
+	/**
+	 * 是否为debug状态
+	 */
 	private static final boolean DBG = false;
 
 	/**
+	 * log使用的tag
 	 * The logging tag used by this class with android.util.Log.
 	 */
 	protected static final String VIEW_LOG_TAG = "View";
 
 	/**
 	 * Used to mark a View that has no ID.
+	 * 标识一个view没有ID
 	 */
 	public static final int NO_ID = -1;
 
@@ -1407,7 +1412,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
 	/**
 	 * The view's tag. {@hide}
-	 * 
+	 * View的tag
 	 * @see #setTag(Object)
 	 * @see #getTag()
 	 */
@@ -1578,6 +1583,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	 * The layout parameters associated with this view and used by the parent
 	 * {@link android.view.ViewGroup} to determine how this view should be laid
 	 * out. {@hide}
+	 * <br>与本View相关的LayoutParams,被父用来确定本View的布局方式
 	 */
 	protected ViewGroup.LayoutParams mLayoutParams;
 
@@ -1615,6 +1621,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	/**
 	 * The offset, in pixels, by which the content of this view is scrolled
 	 * horizontally. {@hide}
+	 * 水平方向上的滚动偏移量
 	 */
 	@ViewDebug.ExportedProperty
 	protected int mScrollX;
@@ -7449,6 +7456,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 被layout方法调用，当本view需要设置它的孩子的size和位置时被调用。具有儿子view的派生类应当
+	 * 重写该方法并且调用每一个儿子的layout方法
+	 * <br>
 	 * Called from layout when this view should assign a size and position to
 	 * each of its children.
 	 * 
@@ -8109,6 +8119,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 找到在当前View层次中最顶上的那个view
+	 * <br>
 	 * <p>
 	 * Finds the topmost view in the current view hierarchy.
 	 * </p>
@@ -8668,6 +8680,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 测量view和它的内容来确定measured 宽度和高度，被{@link #measure(int, int)}调用，并且在子类化时
+	 * 被重写，以提供精确和有效的对内容的测量。<br>
 	 * <p>
 	 * Measure the view and its content to determine the measured width and the
 	 * measured height. This method is invoked by {@link #measure(int, int)} and
@@ -9170,6 +9184,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 从一个xml资源膨胀成一个view。
+	 * <br>
 	 * Inflate a view from an XML resource. This convenience method wraps the
 	 * {@link LayoutInflater} class, which provides a full range of options for
 	 * view inflation.
@@ -9189,6 +9205,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 封装了父控件对子控件的布局需要，每一个MeasureSpec代表了对宽度或者高度要求，一个Mesasure是一个尺寸和模式的组合。
+	 * <br>
 	 * A MeasureSpec encapsulates the layout requirements passed from parent to
 	 * child. Each MeasureSpec represents a requirement for either the width or
 	 * the height. A MeasureSpec is comprised of a size and a mode. There are
@@ -9219,20 +9237,20 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
 		/**
 		 * Measure specification mode: The parent has not imposed any constraint
-		 * on the child. It can be whatever size it wants.
+		 * on the child. It can be whatever size it wants.<br>未确定的尺寸
 		 */
 		public static final int UNSPECIFIED = 0 << MODE_SHIFT;
 
 		/**
 		 * Measure specification mode: The parent has determined an exact size
 		 * for the child. The child is going to be given those bounds regardless
-		 * of how big it wants to be.
+		 * of how big it wants to be.<br>精确的尺寸
 		 */
 		public static final int EXACTLY = 1 << MODE_SHIFT;
 
 		/**
 		 * Measure specification mode: The child can be as large as it wants up
-		 * to the specified size.
+		 * to the specified size.<br>子控件获取尽可能大的尺寸
 		 */
 		public static final int AT_MOST = 2 << MODE_SHIFT;
 
@@ -9345,6 +9363,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 当Key事件分发到本View时执行的回调。
+	 * <br>
 	 * Interface definition for a callback to be invoked when a key event is
 	 * dispatched to this view. The callback will be invoked before the key
 	 * event is given to the view.
@@ -9353,7 +9373,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 		/**
 		 * Called when a key is dispatched to a view. This allows listeners to
 		 * get a chance to respond before the target view.
-		 * 
+		 * <br>允许listener在事件到达目标目标View之前进行响应。
 		 * @param v
 		 *            The view the key has been dispatched to.
 		 * @param keyCode
@@ -9461,6 +9481,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	}
 
 	/**
+	 * 所有想在onSaveInstanceState方法中保存或者恢复状态的派生类的基类
+	 * <br>
 	 * Base class for derived classes that want to save and restore their own
 	 * state in {@link android.view.View#onSaveInstanceState()}.
 	 */
@@ -9468,7 +9490,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 		/**
 		 * Constructor used when reading from a parcel. Reads the state of the
 		 * superclass.
-		 * 
+		 * 构造函数
 		 * @param source
 		 */
 		public BaseSavedState(Parcel source) {
@@ -9500,6 +9522,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	/**
 	 * A set of information given to a view when it is attached to its parent
 	 * window.
+	 * <br>当一个View与它的父window相关联时的一系列信息。
 	 */
 	static class AttachInfo {
 		interface Callbacks {
@@ -9753,6 +9776,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	 * supported. This avoids keeping too many unused fields in most instances
 	 * of View.
 	 * </p>
+	 *  <br>包含了当滚动时的各种信息，避免了在View的大部分实例包含无用的域
 	 */
 	private static class ScrollabilityCache implements Runnable {
 

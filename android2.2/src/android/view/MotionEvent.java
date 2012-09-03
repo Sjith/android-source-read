@@ -22,6 +22,8 @@ import android.os.SystemClock;
 import android.util.Log;
 
 /**
+ * 用于报告运动事件(mouse,pen,finger,trackball）的对象，该类可能保存了绝对或者相对的运动，
+ * 这依赖于正在参考的对象。
  * Object used to report movement (mouse, pen, finger, trackball) events.  This
  * class may hold either absolute or relative movements, depending on what
  * it is being used for.
@@ -156,6 +158,7 @@ public final class MotionEvent implements Parcelable {
     private static final boolean TRACK_RECYCLED_LOCATION = false;
 
     /**
+     * 表示运动事件对屏幕的上边缘感兴趣
      * Flag indicating the motion event intersected the top edge of the screen.
      */
     public static final int EDGE_TOP = 0x00000001;
@@ -696,6 +699,7 @@ public final class MotionEvent implements Parcelable {
     }
 
     /**
+     * 自身左上角的位置<br>
      * {@link #getX(int)} for the first pointer index (may be an
      * arbitrary pointer identifier).
      */
@@ -848,6 +852,7 @@ public final class MotionEvent implements Parcelable {
     }
 
     /**
+     * 相对于屏幕最上角的X位置<br>
      * Returns the original raw Y coordinate of this event.  For touch
      * events on the screen, this is the original location of the event
      * on the screen, before it had been adjusted for the containing window

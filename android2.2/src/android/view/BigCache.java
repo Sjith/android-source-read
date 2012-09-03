@@ -28,6 +28,8 @@ import android.view.Display;
 import android.view.ViewConfiguration;
 
 /**
+ * 包含两个view的一个activity，一个与屏幕一样大小，一个更大一些。较大的那个不能激活它的绘制cache。
+ * <br>
  * This activity contains two Views, one as big as the screen, one much larger. The large one
  * should not be able to activate its drawing cache.
  */

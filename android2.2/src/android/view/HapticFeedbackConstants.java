@@ -17,52 +17,56 @@
 package android.view;
 
 /**
+ * 用于触觉反馈的常数集合 <br>
  * Constants to be used to perform haptic feedback effects via
- * {@link View#performHapticFeedback(int)} 
+ * {@link View#performHapticFeedback(int)}
  */
 public class HapticFeedbackConstants {
 
-    private HapticFeedbackConstants() {}
+	private HapticFeedbackConstants() {
+	}
 
-    /**
-     * The user has performed a long press on an object that is resulting
-     * in an action being performed.
-     */
-    public static final int LONG_PRESS = 0;
-    
-    /**
-     * The user has pressed on a virtual on-screen key.
-     */
-    public static final int VIRTUAL_KEY = 1;
-    
-    /**
-     * The user has pressed a soft keyboard key.
-     */
-    public static final int KEYBOARD_TAP = 3;
+	/**
+	 * The user has performed a long press on an object that is resulting in an
+	 * action being performed.
+	 */
+	public static final int LONG_PRESS = 0;
 
-    /**
-     * This is a private constant.  Feel free to renumber as desired.
-     * @hide
-     */
-    public static final int SAFE_MODE_DISABLED = 10000;
-    
-    /**
-     * This is a private constant.  Feel free to renumber as desired.
-     * @hide
-     */
-    public static final int SAFE_MODE_ENABLED = 10001;
-    
-    /**
-     * Flag for {@link View#performHapticFeedback(int, int)
-     * View.performHapticFeedback(int, int)}: Ignore the setting in the
-     * view for whether to perform haptic feedback, do it always.
-     */
-    public static final int FLAG_IGNORE_VIEW_SETTING = 0x0001;
-    
-    /**
-     * Flag for {@link View#performHapticFeedback(int, int)
-     * View.performHapticFeedback(int, int)}: Ignore the global setting
-     * for whether to perform haptic feedback, do it always.
-     */
-    public static final int FLAG_IGNORE_GLOBAL_SETTING = 0x0002;
+	/**
+	 * The user has pressed on a virtual on-screen key.
+	 */
+	public static final int VIRTUAL_KEY = 1;
+
+	/**
+	 * The user has pressed a soft keyboard key.
+	 */
+	public static final int KEYBOARD_TAP = 3;
+
+	/**
+	 * This is a private constant. Feel free to renumber as desired.
+	 * 
+	 * @hide
+	 */
+	public static final int SAFE_MODE_DISABLED = 10000;
+
+	/**
+	 * This is a private constant. Feel free to renumber as desired.
+	 * 
+	 * @hide
+	 */
+	public static final int SAFE_MODE_ENABLED = 10001;
+
+	/**
+	 * Flag for {@link View#performHapticFeedback(int, int)
+	 * View.performHapticFeedback(int, int)}: Ignore the setting in the view for
+	 * whether to perform haptic feedback, do it always.
+	 */
+	public static final int FLAG_IGNORE_VIEW_SETTING = 0x0001;
+
+	/**
+	 * Flag for {@link View#performHapticFeedback(int, int)
+	 * View.performHapticFeedback(int, int)}: Ignore the global setting for
+	 * whether to perform haptic feedback, do it always.
+	 */
+	public static final int FLAG_IGNORE_GLOBAL_SETTING = 0x0002;
 }

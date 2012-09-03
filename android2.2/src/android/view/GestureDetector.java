@@ -22,6 +22,8 @@ import android.os.Handler;
 import android.os.Message;
 
 /**
+ * 监控各种手势和事件的变化。
+ * <br>
  * Detects various gestures and events using the supplied {@link MotionEvent}s.
  * The {@link OnGestureListener} callback will notify users when a particular
  * motion event has occurred. This class should only be used with {@link MotionEvent}s

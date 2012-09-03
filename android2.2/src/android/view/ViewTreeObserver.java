@@ -21,6 +21,9 @@ import android.graphics.Rect;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ * 一个ViewTreeObserver用来注册listener，用来通知在整个view树上的全局变化。这种全局事件包括但不限于
+ * 真个树的布局，开始绘制整个数结构，touch模式的改变...
+ * <br>ViewTreeObserver不应该被实例化，因为它有View层次提供实例化，可以参看{@link android.view.View#getViewTreeObserver()}来了解实例化方法。
  * A view tree observer is used to register listeners that can be notified of global
  * changes in the view tree. Such global events include, but are not limited to,
  * layout of the whole tree, beginning of the drawing pass, touch mode change....

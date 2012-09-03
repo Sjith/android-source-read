@@ -20,10 +20,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
+ * {@link Parcelable} 的一种实现，应当运作继承层次，来保证所有子类的状态被保存。
  * A {@link Parcelable} implementation that should be used by inheritance
  * hierarchies to ensure the state of all classes along the chain is saved.
  */
 public abstract class AbsSavedState implements Parcelable {
+	/**
+	 * 空状态
+	 */
     public static final AbsSavedState EMPTY_STATE = new AbsSavedState() {};
 
     private final Parcelable mSuperState;

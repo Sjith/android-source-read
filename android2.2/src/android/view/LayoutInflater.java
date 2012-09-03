@@ -310,6 +310,7 @@ public abstract class LayoutInflater {
 	 * @param parser
 	 *            XML dom node containing the description of the view hierarchy.
 	 * @param root
+	 * 			创建的新的View的父节点。
 	 *            Optional view to be the parent of the generated hierarchy.
 	 * @return The root View of the inflated hierarchy. If root was supplied,
 	 *         this is the root View; otherwise it is the root of the inflated

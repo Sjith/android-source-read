@@ -18,6 +18,8 @@ package android.util;
 
 
 /**
+ * 属性的集合
+ * <br>
  * A collection of attributes, as found associated with a tag in an XML
  * document.  Often you will not want to use this interface directly, instead
  * passing it to {@link android.content.res.Resources.Theme#obtainStyledAttributes(AttributeSet, int[], int, int)

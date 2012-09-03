@@ -24,6 +24,11 @@ import android.util.Pools;
 import android.util.PoolableManager;
 
 /**
+ * 用于跟踪touch事件速度的辅助类，实现了fling和其他手势操纵。使用{@link #obtain()}
+ * 方法获取一个新实例，当需要使用使用该类时将motionevent的变量传递到{@link #addMovement(MotionEvent)}
+ * 方法中，当想要确定运行速度的时候调用{@link #computeCurrentVelocity(int)} and then {@link #getXVelocity()}
+ * and {@link #getXVelocity()}.
+ * <br>
  * Helper for tracking the velocity of touch events, for implementing
  * flinging and other such gestures.  Use {@link #obtain} to retrieve a
  * new instance of the class when you are going to begin tracking, put
@@ -116,6 +121,7 @@ public final class VelocityTracker implements Poolable<VelocityTracker> {
     }
     
     /**
+     * 将用户的一个movement添加到tracker。
      * Add a user's movement to the tracker.  You should call this for the
      * initial {@link MotionEvent#ACTION_DOWN}, the following
      * {@link MotionEvent#ACTION_MOVE} events that you receive, and the
@@ -169,6 +175,7 @@ public final class VelocityTracker implements Poolable<VelocityTracker> {
     }
 
     /**
+     * 计算当前的速度基于已经收集到的点。
      * Compute the current velocity based on the points that have been
      * collected.  Only call this when you actually want to retrieve velocity
      * information, as it is relatively expensive.  You can then retrieve

@@ -26,6 +26,7 @@ import android.util.Log;
 
 
 /**
+ * apps用来与window manager进行通话的接口
  * The interface that apps use to talk to the window manager.
  * <p>
  * Use <code>Context.getSystemService(Context.WINDOW_SERVICE)</code> to get one of these.
