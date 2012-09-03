@@ -88,12 +88,14 @@ public interface Adapter {
 	 * Indicated whether the item ids are stable across changes to the
 	 * underlying data.
 	 * 
-	 * @return True if the same id always refers to the same object.
+	 * @return True if the same id always refers to the same object
 	 */
 	boolean hasStableIds();
 
 	/**
-	 * 创建一个View用来显示指定位置的数据，你可以手动创建一个view或者从一个xml布局文件中创建 <br>
+	 * 创建一个View用来显示指定位置的数据，你可以手动创建一个view或者从一个xml布局文件中创建 ，
+	 * View创建以后，父View(GridView,ListView...)将使用默认的布局参数，除非调用了
+	 * {@link android.view.LayoutInflater#inflate(int, android.view.ViewGroup, boolean)}来制定root view<br>
 	 * Get a View that displays the data at the specified position in the data
 	 * set. You can either create a View manually or inflate it from an XML
 	 * layout file. When the View is inflated, the parent View (GridView,
