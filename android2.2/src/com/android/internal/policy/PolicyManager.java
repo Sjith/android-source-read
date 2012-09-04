@@ -30,7 +30,9 @@ import com.android.internal.policy.IPolicy;
 public final class PolicyManager {
     private static final String POLICY_IMPL_CLASS_NAME =
         "com.android.internal.policy.impl.Policy";
-
+    /**
+     * 为{@link com.android.internal.policy.impl.Policy}对象
+     */
     private static final IPolicy sPolicy;
 
     static {

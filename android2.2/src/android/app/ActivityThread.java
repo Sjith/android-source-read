@@ -1290,7 +1290,11 @@ public final class ActivityThread {
     }
 
     private static ContextImpl mSystemContext = null;
-
+    /**
+     * Activity 包含的信息
+     * @author wangsongye
+     *
+     */
     private static final class ActivityRecord {
         IBinder token;
         int ident;

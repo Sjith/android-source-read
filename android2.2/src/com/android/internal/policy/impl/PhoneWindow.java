@@ -76,6 +76,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 /**
+ * 
  * Android-specific Window.
  * <p>
  * todo: need to pull the generic functionality out into a base class
@@ -94,6 +95,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
     ContextMenuCallback mContextMenuCallback = new ContextMenuCallback(FEATURE_CONTEXT_MENU);
 
     // This is the top-level view of the window, containing the window decor.
+    //窗口的顶层view，包含了窗口的装饰信息
     private DecorView mDecor;
 
     // This is the view in which the window contents are placed. It is either
@@ -2020,7 +2022,10 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
             }
         }
     }
-
+    /**
+     * 创建一个新的DecorView
+     * @return
+     */
     protected DecorView generateDecor() {
         return new DecorView(getContext(), -1);
     }
@@ -2164,7 +2169,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
         View in = mLayoutInflater.inflate(layoutResource, null);
         decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
-
+        
         ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
         if (contentParent == null) {
             throw new RuntimeException("Window couldn't find content container view");
@@ -2176,7 +2181,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                 progress.setIndeterminate(true);
             }
         }
-
+        
         // Remaining setup -- of background and title -- that only applies
         // to top-level windows.
         if (getContainer() == null) {

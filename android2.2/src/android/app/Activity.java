@@ -4033,7 +4033,7 @@ public class Activity extends ContextThemeWrapper implements
 			HashMap<String, Object> lastNonConfigurationChildInstances,
 			Configuration config) {
 		attachBaseContext(context);
-
+		//创建新的window
 		mWindow = PolicyManager.makeNewWindow(this);
 		mWindow.setCallback(this);
 		if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) {
@@ -4054,7 +4054,7 @@ public class Activity extends ContextThemeWrapper implements
 		mEmbeddedID = id;
 		mLastNonConfigurationInstance = lastNonConfigurationInstance;
 		mLastNonConfigurationChildInstances = lastNonConfigurationChildInstances;
-
+		//创建一个与window相关的WindowManager
 		mWindow.setWindowManager(null, mToken, mComponent.flattenToString());
 		if (mParent != null) {
 			mWindow.setContainer(mParent.getWindow());

@@ -25,7 +25,7 @@ import android.util.Printer;
  * activity or receiver. This corresponds to information collected
  * from the AndroidManifest.xml's &lt;activity&gt; and
  * &lt;receiver&gt; tags.
- * <br>所有与activity和receiver相关的信息
+ * <br>所有与activity和receiver相关的信息,对应于在AndroidManifest.xml中定义的activity和receiver信息
  */
 public class ActivityInfo extends ComponentInfo
         implements Parcelable {

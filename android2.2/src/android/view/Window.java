@@ -27,8 +27,8 @@ import android.os.IBinder;
 import android.view.accessibility.AccessibilityEvent;
 
 /**
- * 抽象类，顶层window，限定了外观和动作规范，该类的实例应当作为最顶层的view并添加到window manager中。提供了
- * 标准的UI规范，例如北京，title 区域，默认的key处理，等等。 <br>
+ * 抽象类，顶级窗口window,也就是主窗口，限定了外观和动作规范，该类的实例应当作为最顶层的view并添加到window manager中。提供了
+ * 标准的UI规范，例如背景，title 区域，默认的key处理，等等。 <br>
  * 唯一的一个子类为{@link android.policy.PhoneWindow},当你需要一个window的时候可以实例化该类，可能
  * PhoneWindow这个类会被重构，因此会有一个工厂方法用来创建Window实例，在不需要知道具体实现的情况下 <br>
  * Abstract base class for a top-level window look and behavior policy. An

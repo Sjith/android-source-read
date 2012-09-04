@@ -74,7 +74,7 @@ import java.util.Arrays;
 import java.util.WeakHashMap;
 
 /**
- * 该类表示UI组件的基本组成块，一个View在屏幕上占据了一个举行区域，并负责绘制和事件处理 View是<em>widgets</em>
+ * 该类表示UI组件的基本组成块，一个View在屏幕上占据了一个矩形区域，并负责绘制和事件处理 View是<em>widgets</em>
  * 的基类，widget用来创建交互UI组件(button,text fields,etc.) 子类
  * {@link android.view.ViewGroup} 是<em>layouts</em>
  * 的基类，用于包含其他view或其他viewgroup，并设定layout的属性，lyaout本身不可见 <br>
@@ -1550,6 +1550,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 	private static final int AWAKEN_SCROLL_BARS_ON_ATTACH = 0x08000000;
 
 	/**
+	 * 相关联的parent
 	 * The parent this view is attached to. {@hide}
 	 * 
 	 * @see #getParent()
@@ -9557,7 +9558,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 							}, POOL_LIMIT));
 
 			private InvalidateInfo mNext;
-
+			
+			/**
+			 * 目标view
+			 */
 			View target;
 
 			int left;
@@ -9581,7 +9585,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 				sPool.release(this);
 			}
 		}
-
+		
 		final IWindowSession mSession;
 
 		final IWindow mWindow;
@@ -9592,6 +9596,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
 		/**
 		 * The top view of the hierarchy.
+		 * view树结构的顶层view
 		 */
 		View mRootView;
 

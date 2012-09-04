@@ -1,0 +1,174 @@
+ActivityThread类:performLaunchActivity函数：
+	 activity.attach(appContext, this, getInstrumentation(), r.token,
+                        r.ident, app, r.intent, r.activityInfo, title, r.parent,
+                        r.embeddedID, r.lastNonConfigurationInstance,
+                        r.lastNonConfigurationChildInstances, config);
+Activity类中的attach方法：
+	//创建新的window，与Activity相关联,在android2.2以下以及2.2版本返回的是MidWindow,但是sdk类库中包含PhoneWindow，2.2版本以上删除了MidWindow类，使用的是PhoneWindow。这两个类都是继承自Window，因此可以认为两个类是相同的。
+	mWindow = PolicyManager.makeNewWindow(this);
+	***省略操作
+	//创建一个与window相关的WindowManager,由于Activity类中使用的setManager方法传递的WindowManager参数为null，因此在Window类中使用WindowManager变量是同一个对象。
+	mWindow.setWindowManager(null, mToken, mComponent.flattenToString());
+	if (mParent != null) {
+		mWindow.setContainer(mParent.getWindow());
+	}
+	mWindowManager = mWindow.getWindowManager();
+Window类的setWindowManager方法：
+	public void setWindowManager(WindowManager wm, IBinder appToken,
+			String appName) {
+		mAppToken = appToken;
+		mAppName = appName;
+		if (wm == null) {
+			wm = WindowManagerImpl.getDefault();
+		}
+		//使用WindowManager的变量来创建LocalWindowManager
+		mWindowManager = new LocalWindowManager(wm);
+	}
+
+	private class LocalWindowManager implements WindowManager {
+		LocalWindowManager(WindowManager wm) {
+			mWindowManager = wm;
+			mDefaultDisplay = mContext.getResources().getDefaultDisplay(
+					mWindowManager.getDefaultDisplay());
+		}
+		public final void addView(View view, ViewGroup.LayoutParams params) {
+			****
+			View decor = peekDecorView();
+			****
+			mWindowManager.addView(***);
+		}
+		*********
+	}
+	Window类的peekDecorView()方法，获取当前的Decor View
+	public abstract View peekDecorView();
+	获取顶层窗口decor view（包含了标准窗口）可以作为window添加到window manager。
+	public abstract View getDecorView();
+	这两个函数在PhoneWindow中被实现。
+在WindowImpl类中：
+	public static WindowManagerImpl getDefault() {
+		return mWindowManager;
+	}
+	private static WindowManagerImpl mWindowManager = new WindowManagerImpl();
+	因此通过getDefault()方法返回的WindowManagerImpl是同一个对象。
+	
+	addView方法,将View保存到数组中，并设置View的root信息：
+	private void addView(View view, ViewGroup.LayoutParams params, boolean nest) {
+		****
+		ViewRoot root;
+		View panelParentView = null;
+		****
+		root = new ViewRoot(view.getContext());
+		****
+		mViews[index] = view;
+		mRoots[index] = root;
+		mParams[index] = wparams;
+		****
+		root.setView(view, wparams, panelParentView);
+	}
+
+PhoneWindow继承了Window，实现了Window中的所有虚函数。
+    // This is the top-level view of the window, containing the window decor.
+    // 窗口的顶层View
+    private DecorView mDecor;
+
+    // This is the view in which the window contents are placed. It is either
+    // mDecor itself, or a child of mDecor where the contents go.
+    // 放置窗口内容的View，或者是mDecor或者mDecor的子View用来放置内容，对应于ID为com.android.internal.R.id.content的FramLayout。
+    private ViewGroup mContentParent;
+    //设置view
+    @Override
+    public void setContentView(int layoutResID) {
+	//判断contentParent是否为null，如果为null则需要installDecor,否则需要清空原来已经填充的view
+        if (mContentParent == null) {
+            installDecor();
+        } else {
+            mContentParent.removeAllViews();
+        }
+	//inflate xml并设置父view为mContentParent，初次设置view
+        mLayoutInflater.inflate(layoutResID, mContentParent);
+        final Callback cb = getCallback();
+        if (cb != null) {
+            cb.onContentChanged();
+        }
+    }
+
+    @Override
+    public void setContentView(View view) {
+        setContentView(view, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+    }
+
+    @Override
+    public void setContentView(View view, ViewGroup.LayoutParams params) {
+	//判断contentParent是否为null，如果为null则需要installDecor,否则需要清空原来已经填充的view
+        if (mContentParent == null) {
+            installDecor();
+        } else {
+            mContentParent.removeAllViews();
+        }
+	//给mContentParent增加view
+        mContentParent.addView(view, params);
+        final Callback cb = getCallback();
+        if (cb != null) {
+            cb.onContentChanged();
+        }
+    }
+ 	private void installDecor() {
+	//生成mDecor
+        if (mDecor == null) {
+            mDecor = generateDecor();
+            mDecor.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+            mDecor.setIsRootNamespace(true);
+        }
+        if (mContentParent == null) {
+	    //生成mContentParent
+            mContentParent = generateLayout(mDecor);
+
+            mTitleView = (TextView)findViewById(com.android.internal.R.id.title);
+            ****设置标题栏信息
+        }
+    }
+   //使用DecorView作为参数创建mContentParent，并设置mDecor将mContentParent添加为子view
+   //mContentParent对应于id为content的framlayout可以参考代码中提供的window布局文件，以及使用的findViewById函数的参数。
+   protected ViewGroup generateLayout(DecorView decor) {
+	设置flags
+        WindowManager.LayoutParams params = getAttributes();
+		设置params
+        // Inflate the window decor.
+        int layoutResource;
+        int features = getLocalFeatures();
+        获取window对应的layout资源id
+        mDecor.startChanging();
+		//window对应的view
+        View in = mLayoutInflater.inflate(layoutResource, null);
+		//将window对应的view作为decor子view，并设置布局参数为铺满整个屏幕(match_parent)
+        decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+        //找到id为content的framlayout，使用的findViewById是mDecor的方法，因此contentParent为 mDecor的子view,可以参考Window的findViewById方法
+        ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
+		设置mDecor的背景和标题
+        mDecor.finishChanging();
+        return contentParent;
+   }
+   //从本质上来讲Decor为一个FramLayout
+   private final class DecorView extends FrameLayout {
+  	***省略各种操作
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

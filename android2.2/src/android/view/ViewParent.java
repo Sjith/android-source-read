@@ -19,7 +19,7 @@ package android.view;
 import android.graphics.Rect;
 
 /**
- * 定义了作为其他View的parent的view的责任，
+ * 定义了作为其他View的parent的view的需要处理的操作，
  * Defines the responsibilities for a class that will be a parent of a View.
  * This is the API that a view sees when it wants to interact with its parent.
  * 

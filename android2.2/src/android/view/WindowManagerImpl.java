@@ -105,6 +105,12 @@ public class WindowManagerImpl implements WindowManager {
 		addView(view, params, false);
 	}
 
+	/**
+	 * 将view添加到进来，方便管理
+	 * @param view 需要添加的View
+	 * @param params 布局参数
+	 * @param nest 
+	 */
 	private void addView(View view, ViewGroup.LayoutParams params, boolean nest) {
 		if (Config.LOGV)
 			Log.v("WindowManager", "addView view=" + view);
@@ -334,9 +340,11 @@ public class WindowManagerImpl implements WindowManager {
 	public Display getDefaultDisplay() {
 		return new Display(Display.DEFAULT_DISPLAY);
 	}
-
+	//管理的View数组
 	private View[] mViews;
+	//管理的ViewRoot数组
 	private ViewRoot[] mRoots;
+	//对应于View数组的布局数组
 	private WindowManager.LayoutParams[] mParams;
 
 	private static void removeItem(Object[] dst, Object[] src, int index) {
