@@ -136,13 +136,14 @@ PhoneWindow继承了Window，实现了Window中的所有虚函数。
         // Inflate the window decor.
         int layoutResource;
         int features = getLocalFeatures();
-        获取window对应的layout资源id
+        获取整个屏幕对应的layout资源id
         mDecor.startChanging();
-		//window对应的view
+		//根据使用的资源不同，显示出来的布局也不同，可以参考sdk下的platforms/android-*/data/res/layout/screen*.xml或dialog*.xml
         View in = mLayoutInflater.inflate(layoutResource, null);
-		//将window对应的view作为decor子view，并设置布局参数为铺满整个屏幕(match_parent)
+		//将整个屏幕对应的view作为decor子view，并设置布局参数为铺满整个屏幕(match_parent)
         decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
-        //找到id为content的framlayout，使用的findViewById是mDecor的方法，因此contentParent为 mDecor的子view,可以参考Window的findViewById方法
+        //找到id为content的framlayout，由于使用的资源不同，所以content不一定为mDecor的直接子View。使用的findViewById是mDecor的方法，
+		//由于已经将屏幕View加为mDecor的子View，因此mContentParent也是mDecor的子View
         ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
 		设置mDecor的背景和标题
         mDecor.finishChanging();
@@ -153,7 +154,7 @@ PhoneWindow继承了Window，实现了Window中的所有虚函数。
   	***省略各种操作
    }
 
-
+Activity在onCreate之前调用attach方法，在attach方法中会创建window对象。window对象创建时并木有创建 Decor对象对象。用户在Activity中调用setContentView,然后调用window的setContentView，这时会检查 DecorView是否存在，如果不存在则创建DecorView对象，然后把用户自己的View 添加到DecorView中。
 
 
 
