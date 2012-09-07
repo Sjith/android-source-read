@@ -21,6 +21,8 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 开始的块，结束的慢
+ * <br>
  * An interpolator where the rate of change starts out quickly and 
  * and then decelerates.
  *

@@ -25,431 +25,445 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a group of Animations that should be played together.
- * The transformation of each individual animation are composed 
- * together into a single transform. 
- * If AnimationSet sets any properties that its children also set
- * (for example, duration or fillBefore), the values of AnimationSet
+ * 代表需要执行的animation，所有的animation组合成一个单独的转换，如果AnimationSet设置了任何
+ * 属性，同时它的儿子也设置了此属性(duration,或者fillBefore）则使用AnimationSet的属性值。
+ * <br>
+ * Represents a group of Animations that should be played together. The
+ * transformation of each individual animation are composed together into a
+ * single transform. If AnimationSet sets any properties that its children also
+ * set (for example, duration or fillBefore), the values of AnimationSet
  * override the child values.
  */
 public class AnimationSet extends Animation {
-    private static final int PROPERTY_FILL_AFTER_MASK         = 0x1;
-    private static final int PROPERTY_FILL_BEFORE_MASK        = 0x2;
-    private static final int PROPERTY_REPEAT_MODE_MASK        = 0x4;
-    private static final int PROPERTY_START_OFFSET_MASK       = 0x8;
-    private static final int PROPERTY_SHARE_INTERPOLATOR_MASK = 0x10;
-    private static final int PROPERTY_DURATION_MASK           = 0x20;
-    private static final int PROPERTY_MORPH_MATRIX_MASK       = 0x40;
-    private static final int PROPERTY_CHANGE_BOUNDS_MASK      = 0x80;
+	private static final int PROPERTY_FILL_AFTER_MASK = 0x1;
+	private static final int PROPERTY_FILL_BEFORE_MASK = 0x2;
+	private static final int PROPERTY_REPEAT_MODE_MASK = 0x4;
+	private static final int PROPERTY_START_OFFSET_MASK = 0x8;
+	private static final int PROPERTY_SHARE_INTERPOLATOR_MASK = 0x10;
+	private static final int PROPERTY_DURATION_MASK = 0x20;
+	private static final int PROPERTY_MORPH_MATRIX_MASK = 0x40;
+	private static final int PROPERTY_CHANGE_BOUNDS_MASK = 0x80;
 
-    private int mFlags = 0;
+	private int mFlags = 0;
+	/**
+	 * animation集合
+	 */
+	private ArrayList<Animation> mAnimations = new ArrayList<Animation>();
 
-    private ArrayList<Animation> mAnimations = new ArrayList<Animation>();
+	private Transformation mTempTransformation = new Transformation();
 
-    private Transformation mTempTransformation = new Transformation();
+	private long mLastEnd;
 
-    private long mLastEnd;
+	private long[] mStoredOffsets;
 
-    private long[] mStoredOffsets;
+	/**
+	 * Constructor used when an AnimationSet is loaded from a resource.
+	 * 
+	 * @param context
+	 *            Application context to use
+	 * @param attrs
+	 *            Attribute set from which to read values
+	 */
+	public AnimationSet(Context context, AttributeSet attrs) {
+		super(context, attrs);
 
-    /**
-     * Constructor used when an AnimationSet is loaded from a resource. 
-     * 
-     * @param context Application context to use
-     * @param attrs Attribute set from which to read values
-     */
-    public AnimationSet(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        
-        TypedArray a =
-            context.obtainStyledAttributes(attrs, com.android.internal.R.styleable.AnimationSet);
-        
-        setFlag(PROPERTY_SHARE_INTERPOLATOR_MASK,
-                a.getBoolean(com.android.internal.R.styleable.AnimationSet_shareInterpolator, true));
-        init();
-        
-        a.recycle();
-    }
-    
-    
-    /**
-     * Constructor to use when building an AnimationSet from code
-     * 
-     * @param shareInterpolator Pass true if all of the animations in this set
-     *        should use the interpolator assocciated with this AnimationSet.
-     *        Pass false if each animation should use its own interpolator.
-     */
-    public AnimationSet(boolean shareInterpolator) {
-        setFlag(PROPERTY_SHARE_INTERPOLATOR_MASK, shareInterpolator);
-        init();
-    }
+		TypedArray a = context.obtainStyledAttributes(attrs,
+				com.android.internal.R.styleable.AnimationSet);
 
-    @Override
-    protected AnimationSet clone() throws CloneNotSupportedException {
-        final AnimationSet animation = (AnimationSet) super.clone();
-        animation.mTempTransformation = new Transformation();
-        animation.mAnimations = new ArrayList<Animation>();
+		setFlag(PROPERTY_SHARE_INTERPOLATOR_MASK,
+				a.getBoolean(
+						com.android.internal.R.styleable.AnimationSet_shareInterpolator,
+						true));
+		init();
 
-        final int count = mAnimations.size();
-        final ArrayList<Animation> animations = mAnimations;
+		a.recycle();
+	}
 
-        for (int i = 0; i < count; i++) {
-            animation.mAnimations.add(animations.get(i).clone());
-        }
+	/**
+	 * Constructor to use when building an AnimationSet from code
+	 * 
+	 * @param shareInterpolator
+	 *            Pass true if all of the animations in this set should use the
+	 *            interpolator assocciated with this AnimationSet. Pass false if
+	 *            each animation should use its own interpolator.
+	 */
+	public AnimationSet(boolean shareInterpolator) {
+		setFlag(PROPERTY_SHARE_INTERPOLATOR_MASK, shareInterpolator);
+		init();
+	}
 
-        return animation;
-    }
+	@Override
+	protected AnimationSet clone() throws CloneNotSupportedException {
+		final AnimationSet animation = (AnimationSet) super.clone();
+		animation.mTempTransformation = new Transformation();
+		animation.mAnimations = new ArrayList<Animation>();
 
-    private void setFlag(int mask, boolean value) {
-        if (value) {
-            mFlags |= mask;
-        } else {
-            mFlags &= ~mask;
-        }
-    }
+		final int count = mAnimations.size();
+		final ArrayList<Animation> animations = mAnimations;
 
-    private void init() {
-        mStartTime = 0;
-        mDuration = 0;
-    }
+		for (int i = 0; i < count; i++) {
+			animation.mAnimations.add(animations.get(i).clone());
+		}
 
-    @Override
-    public void setFillAfter(boolean fillAfter) {
-        mFlags |= PROPERTY_FILL_AFTER_MASK;
-        super.setFillAfter(fillAfter);
-    }
+		return animation;
+	}
 
-    @Override
-    public void setFillBefore(boolean fillBefore) {
-        mFlags |= PROPERTY_FILL_BEFORE_MASK;
-        super.setFillBefore(fillBefore);
-    }
+	private void setFlag(int mask, boolean value) {
+		if (value) {
+			mFlags |= mask;
+		} else {
+			mFlags &= ~mask;
+		}
+	}
 
-    @Override
-    public void setRepeatMode(int repeatMode) {
-        mFlags |= PROPERTY_REPEAT_MODE_MASK;
-        super.setRepeatMode(repeatMode);
-    }
+	private void init() {
+		mStartTime = 0;
+		mDuration = 0;
+	}
 
-    @Override
-    public void setStartOffset(long startOffset) {
-        mFlags |= PROPERTY_START_OFFSET_MASK;
-        super.setStartOffset(startOffset);
-    }
+	@Override
+	public void setFillAfter(boolean fillAfter) {
+		mFlags |= PROPERTY_FILL_AFTER_MASK;
+		super.setFillAfter(fillAfter);
+	}
 
-    /**
-     * <p>Sets the duration of every child animation.</p>
-     *
-     * @param durationMillis the duration of the animation, in milliseconds, for
-     *        every child in this set
-     */
-    @Override
-    public void setDuration(long durationMillis) {
-        mFlags |= PROPERTY_DURATION_MASK;
-        super.setDuration(durationMillis);
-    }
+	@Override
+	public void setFillBefore(boolean fillBefore) {
+		mFlags |= PROPERTY_FILL_BEFORE_MASK;
+		super.setFillBefore(fillBefore);
+	}
 
-    /**
-     * Add a child animation to this animation set.
-     * The transforms of the child animations are applied in the order
-     * that they were added
-     * @param a Animation to add.
-     */
-    public void addAnimation(Animation a) {
-        mAnimations.add(a);
+	@Override
+	public void setRepeatMode(int repeatMode) {
+		mFlags |= PROPERTY_REPEAT_MODE_MASK;
+		super.setRepeatMode(repeatMode);
+	}
 
-        boolean noMatrix = (mFlags & PROPERTY_MORPH_MATRIX_MASK) == 0;
-        if (noMatrix && a.willChangeTransformationMatrix()) {
-            mFlags |= PROPERTY_MORPH_MATRIX_MASK;
-        }
+	@Override
+	public void setStartOffset(long startOffset) {
+		mFlags |= PROPERTY_START_OFFSET_MASK;
+		super.setStartOffset(startOffset);
+	}
 
-        boolean changeBounds = (mFlags & PROPERTY_CHANGE_BOUNDS_MASK) == 0;
-        if (changeBounds && a.willChangeTransformationMatrix()) {
-            mFlags |= PROPERTY_CHANGE_BOUNDS_MASK;
-        }
+	/**
+	 * <p>
+	 * Sets the duration of every child animation.
+	 * </p>
+	 * 
+	 * @param durationMillis
+	 *            the duration of the animation, in milliseconds, for every
+	 *            child in this set
+	 */
+	@Override
+	public void setDuration(long durationMillis) {
+		mFlags |= PROPERTY_DURATION_MASK;
+		super.setDuration(durationMillis);
+	}
 
-        if (mAnimations.size() == 1) {
-            mDuration = a.getStartOffset() + a.getDuration();
-            mLastEnd = mStartOffset + mDuration;
-        } else {
-            mLastEnd = Math.max(mLastEnd, a.getStartOffset() + a.getDuration());
-            mDuration = mLastEnd - mStartOffset;
-        }
-    }
-    
-    /**
-     * Sets the start time of this animation and all child animations
-     * 
-     * @see android.view.animation.Animation#setStartTime(long)
-     */
-    @Override
-    public void setStartTime(long startTimeMillis) {
-        super.setStartTime(startTimeMillis);
+	/**
+	 * Add a child animation to this animation set. The transforms of the child
+	 * animations are applied in the order that they were added
+	 * 
+	 * @param a
+	 *            Animation to add.
+	 */
+	public void addAnimation(Animation a) {
+		mAnimations.add(a);
 
-        final int count = mAnimations.size();
-        final ArrayList<Animation> animations = mAnimations;
+		boolean noMatrix = (mFlags & PROPERTY_MORPH_MATRIX_MASK) == 0;
+		if (noMatrix && a.willChangeTransformationMatrix()) {
+			mFlags |= PROPERTY_MORPH_MATRIX_MASK;
+		}
 
-        for (int i = 0; i < count; i++) {
-            Animation a = animations.get(i);
-            a.setStartTime(startTimeMillis);
-        }
-    }
+		boolean changeBounds = (mFlags & PROPERTY_CHANGE_BOUNDS_MASK) == 0;
+		if (changeBounds && a.willChangeTransformationMatrix()) {
+			mFlags |= PROPERTY_CHANGE_BOUNDS_MASK;
+		}
 
-    @Override
-    public long getStartTime() {
-        long startTime = Long.MAX_VALUE;
+		if (mAnimations.size() == 1) {
+			mDuration = a.getStartOffset() + a.getDuration();
+			mLastEnd = mStartOffset + mDuration;
+		} else {
+			mLastEnd = Math.max(mLastEnd, a.getStartOffset() + a.getDuration());
+			mDuration = mLastEnd - mStartOffset;
+		}
+	}
 
-        final int count = mAnimations.size();
-        final ArrayList<Animation> animations = mAnimations;
+	/**
+	 * Sets the start time of this animation and all child animations
+	 * 
+	 * @see android.view.animation.Animation#setStartTime(long)
+	 */
+	@Override
+	public void setStartTime(long startTimeMillis) {
+		super.setStartTime(startTimeMillis);
 
-        for (int i = 0; i < count; i++) {
-            Animation a = animations.get(i);
-            startTime = Math.min(startTime, a.getStartTime());
-        }
+		final int count = mAnimations.size();
+		final ArrayList<Animation> animations = mAnimations;
 
-        return startTime;
-    }
+		for (int i = 0; i < count; i++) {
+			Animation a = animations.get(i);
+			a.setStartTime(startTimeMillis);
+		}
+	}
 
-    @Override
-    public void restrictDuration(long durationMillis) {
-        super.restrictDuration(durationMillis);
+	@Override
+	public long getStartTime() {
+		long startTime = Long.MAX_VALUE;
 
-        final ArrayList<Animation> animations = mAnimations;
-        int count = animations.size();
+		final int count = mAnimations.size();
+		final ArrayList<Animation> animations = mAnimations;
 
-        for (int i = 0; i < count; i++) {
-            animations.get(i).restrictDuration(durationMillis);
-        }
-    }
-    
-    /**
-     * The duration of an AnimationSet is defined to be the 
-     * duration of the longest child animation.
-     * 
-     * @see android.view.animation.Animation#getDuration()
-     */
-    @Override
-    public long getDuration() {
-        final ArrayList<Animation> animations = mAnimations;
-        final int count = animations.size();
-        long duration = 0;
+		for (int i = 0; i < count; i++) {
+			Animation a = animations.get(i);
+			startTime = Math.min(startTime, a.getStartTime());
+		}
 
-        boolean durationSet = (mFlags & PROPERTY_DURATION_MASK) == PROPERTY_DURATION_MASK;
-        if (durationSet) {
-            duration = mDuration;
-        } else {
-            for (int i = 0; i < count; i++) {
-                duration = Math.max(duration, animations.get(i).getDuration());
-            }
-        }
+		return startTime;
+	}
 
-        return duration;
-    }
+	@Override
+	public void restrictDuration(long durationMillis) {
+		super.restrictDuration(durationMillis);
 
-    /**
-     * The duration hint of an animation set is the maximum of the duration
-     * hints of all of its component animations.
-     * 
-     * @see android.view.animation.Animation#computeDurationHint
-     */
-    public long computeDurationHint() {
-        long duration = 0;
-        final int count = mAnimations.size();
-        final ArrayList<Animation> animations = mAnimations;
-        for (int i = count - 1; i >= 0; --i) {
-            final long d = animations.get(i).computeDurationHint();
-            if (d > duration) duration = d;
-        }
-        return duration;
-    }
+		final ArrayList<Animation> animations = mAnimations;
+		int count = animations.size();
 
-    /**
-     * @hide
-     */
-    public void initializeInvalidateRegion(int left, int top, int right, int bottom) {
-        final RectF region = mPreviousRegion;
-        region.set(left, top, right, bottom);
-        region.inset(-1.0f, -1.0f);
+		for (int i = 0; i < count; i++) {
+			animations.get(i).restrictDuration(durationMillis);
+		}
+	}
 
-        if (mFillBefore) {
-            final int count = mAnimations.size();
-            final ArrayList<Animation> animations = mAnimations;
-            final Transformation temp = mTempTransformation;
+	/**
+	 * The duration of an AnimationSet is defined to be the duration of the
+	 * longest child animation.
+	 * 
+	 * @see android.view.animation.Animation#getDuration()
+	 */
+	@Override
+	public long getDuration() {
+		final ArrayList<Animation> animations = mAnimations;
+		final int count = animations.size();
+		long duration = 0;
 
-            final Transformation previousTransformation = mPreviousTransformation;
+		boolean durationSet = (mFlags & PROPERTY_DURATION_MASK) == PROPERTY_DURATION_MASK;
+		if (durationSet) {
+			duration = mDuration;
+		} else {
+			for (int i = 0; i < count; i++) {
+				duration = Math.max(duration, animations.get(i).getDuration());
+			}
+		}
 
-            for (int i = count - 1; i >= 0; --i) {
-                final Animation a = animations.get(i);
+		return duration;
+	}
 
-                temp.clear();
-                final Interpolator interpolator = a.mInterpolator;
-                a.applyTransformation(interpolator != null ? interpolator.getInterpolation(0.0f)
-                        : 0.0f, temp);
-                previousTransformation.compose(temp);
-            }
-        }
-    }
+	/**
+	 * The duration hint of an animation set is the maximum of the duration
+	 * hints of all of its component animations.
+	 * 
+	 * @see android.view.animation.Animation#computeDurationHint
+	 */
+	public long computeDurationHint() {
+		long duration = 0;
+		final int count = mAnimations.size();
+		final ArrayList<Animation> animations = mAnimations;
+		for (int i = count - 1; i >= 0; --i) {
+			final long d = animations.get(i).computeDurationHint();
+			if (d > duration)
+				duration = d;
+		}
+		return duration;
+	}
 
-    /**
-     * The transformation of an animation set is the concatenation of all of its
-     * component animations.
-     * 
-     * @see android.view.animation.Animation#getTransformation
-     */
-    @Override
-    public boolean getTransformation(long currentTime, Transformation t) {
-        final int count = mAnimations.size();
-        final ArrayList<Animation> animations = mAnimations;
-        final Transformation temp = mTempTransformation;
+	/**
+	 * @hide
+	 */
+	public void initializeInvalidateRegion(int left, int top, int right,
+			int bottom) {
+		final RectF region = mPreviousRegion;
+		region.set(left, top, right, bottom);
+		region.inset(-1.0f, -1.0f);
 
-        boolean more = false;
-        boolean started = false;
-        boolean ended = true;
+		if (mFillBefore) {
+			final int count = mAnimations.size();
+			final ArrayList<Animation> animations = mAnimations;
+			final Transformation temp = mTempTransformation;
 
-        t.clear();
+			final Transformation previousTransformation = mPreviousTransformation;
 
-        for (int i = count - 1; i >= 0; --i) {
-            final Animation a = animations.get(i);
+			for (int i = count - 1; i >= 0; --i) {
+				final Animation a = animations.get(i);
 
-            temp.clear();
-            more = a.getTransformation(currentTime, temp) || more;
-            t.compose(temp);
+				temp.clear();
+				final Interpolator interpolator = a.mInterpolator;
+				a.applyTransformation(
+						interpolator != null ? interpolator
+								.getInterpolation(0.0f) : 0.0f, temp);
+				previousTransformation.compose(temp);
+			}
+		}
+	}
 
-            started = started || a.hasStarted();
-            ended = a.hasEnded() && ended;
-        }
+	/**
+	 * The transformation of an animation set is the concatenation of all of its
+	 * component animations.
+	 * 
+	 * @see android.view.animation.Animation#getTransformation
+	 */
+	@Override
+	public boolean getTransformation(long currentTime, Transformation t) {
+		final int count = mAnimations.size();
+		final ArrayList<Animation> animations = mAnimations;
+		final Transformation temp = mTempTransformation;
 
-        if (started && !mStarted) {
-            if (mListener != null) {
-                mListener.onAnimationStart(this);
-            }
-            mStarted = true;
-        }
+		boolean more = false;
+		boolean started = false;
+		boolean ended = true;
 
-        if (ended != mEnded) {
-            if (mListener != null) {
-                mListener.onAnimationEnd(this);
-            }
-            mEnded = ended;
-        }
+		t.clear();
 
-        return more;
-    }
-    
-    /**
-     * @see android.view.animation.Animation#scaleCurrentDuration(float)
-     */
-    @Override
-    public void scaleCurrentDuration(float scale) {
-        final ArrayList<Animation> animations = mAnimations;
-        int count = animations.size();
-        for (int i = 0; i < count; i++) {
-            animations.get(i).scaleCurrentDuration(scale);
-        }
-    }
+		for (int i = count - 1; i >= 0; --i) {
+			final Animation a = animations.get(i);
 
-    /**
-     * @see android.view.animation.Animation#initialize(int, int, int, int)
-     */
-    @Override
-    public void initialize(int width, int height, int parentWidth, int parentHeight) {
-        super.initialize(width, height, parentWidth, parentHeight);
+			temp.clear();
+			more = a.getTransformation(currentTime, temp) || more;
+			t.compose(temp);
 
-        boolean durationSet = (mFlags & PROPERTY_DURATION_MASK) == PROPERTY_DURATION_MASK;
-        boolean fillAfterSet = (mFlags & PROPERTY_FILL_AFTER_MASK) == PROPERTY_FILL_AFTER_MASK;
-        boolean fillBeforeSet = (mFlags & PROPERTY_FILL_BEFORE_MASK) == PROPERTY_FILL_BEFORE_MASK;
-        boolean repeatModeSet = (mFlags & PROPERTY_REPEAT_MODE_MASK) == PROPERTY_REPEAT_MODE_MASK;
-        boolean shareInterpolator = (mFlags & PROPERTY_SHARE_INTERPOLATOR_MASK)
-                == PROPERTY_SHARE_INTERPOLATOR_MASK;
-        boolean startOffsetSet = (mFlags & PROPERTY_START_OFFSET_MASK)
-                == PROPERTY_START_OFFSET_MASK;
+			started = started || a.hasStarted();
+			ended = a.hasEnded() && ended;
+		}
 
-        if (shareInterpolator) {
-            ensureInterpolator();
-        }
+		if (started && !mStarted) {
+			if (mListener != null) {
+				mListener.onAnimationStart(this);
+			}
+			mStarted = true;
+		}
 
-        final ArrayList<Animation> children = mAnimations;
-        final int count = children.size();
+		if (ended != mEnded) {
+			if (mListener != null) {
+				mListener.onAnimationEnd(this);
+			}
+			mEnded = ended;
+		}
 
-        final long duration = mDuration;
-        final boolean fillAfter = mFillAfter;
-        final boolean fillBefore = mFillBefore;
-        final int repeatMode = mRepeatMode;
-        final Interpolator interpolator = mInterpolator;
-        final long startOffset = mStartOffset;
+		return more;
+	}
 
+	/**
+	 * @see android.view.animation.Animation#scaleCurrentDuration(float)
+	 */
+	@Override
+	public void scaleCurrentDuration(float scale) {
+		final ArrayList<Animation> animations = mAnimations;
+		int count = animations.size();
+		for (int i = 0; i < count; i++) {
+			animations.get(i).scaleCurrentDuration(scale);
+		}
+	}
 
-        long[] storedOffsets = mStoredOffsets;
-        if (startOffsetSet) {
-            if (storedOffsets == null || storedOffsets.length != count) {
-                storedOffsets = mStoredOffsets = new long[count];
-            }
-        } else if (storedOffsets != null) {
-            storedOffsets = mStoredOffsets = null;
-        }
+	/**
+	 * @see android.view.animation.Animation#initialize(int, int, int, int)
+	 */
+	@Override
+	public void initialize(int width, int height, int parentWidth,
+			int parentHeight) {
+		super.initialize(width, height, parentWidth, parentHeight);
 
-        for (int i = 0; i < count; i++) {
-            Animation a = children.get(i);
-            if (durationSet) {
-                a.setDuration(duration);
-            }
-            if (fillAfterSet) {
-                a.setFillAfter(fillAfter);
-            }
-            if (fillBeforeSet) {
-                a.setFillBefore(fillBefore);
-            }
-            if (repeatModeSet) {
-                a.setRepeatMode(repeatMode);
-            }
-            if (shareInterpolator) {
-                a.setInterpolator(interpolator);
-            }
-            if (startOffsetSet) {
-                long offset = a.getStartOffset();
-                a.setStartOffset(offset + startOffset);
-                storedOffsets[i] = offset;
-            }
-            a.initialize(width, height, parentWidth, parentHeight);
-        }
-    }
+		boolean durationSet = (mFlags & PROPERTY_DURATION_MASK) == PROPERTY_DURATION_MASK;
+		boolean fillAfterSet = (mFlags & PROPERTY_FILL_AFTER_MASK) == PROPERTY_FILL_AFTER_MASK;
+		boolean fillBeforeSet = (mFlags & PROPERTY_FILL_BEFORE_MASK) == PROPERTY_FILL_BEFORE_MASK;
+		boolean repeatModeSet = (mFlags & PROPERTY_REPEAT_MODE_MASK) == PROPERTY_REPEAT_MODE_MASK;
+		boolean shareInterpolator = (mFlags & PROPERTY_SHARE_INTERPOLATOR_MASK) == PROPERTY_SHARE_INTERPOLATOR_MASK;
+		boolean startOffsetSet = (mFlags & PROPERTY_START_OFFSET_MASK) == PROPERTY_START_OFFSET_MASK;
 
-    @Override
-    public void reset() {
-        super.reset();
-        restoreChildrenStartOffset();
-    }
+		if (shareInterpolator) {
+			ensureInterpolator();
+		}
 
-    /**
-     * @hide
-     */
-    void restoreChildrenStartOffset() {
-        final long[] offsets = mStoredOffsets;
-        if (offsets == null) return;
+		final ArrayList<Animation> children = mAnimations;
+		final int count = children.size();
 
-        final ArrayList<Animation> children = mAnimations;
-        final int count = children.size();
+		final long duration = mDuration;
+		final boolean fillAfter = mFillAfter;
+		final boolean fillBefore = mFillBefore;
+		final int repeatMode = mRepeatMode;
+		final Interpolator interpolator = mInterpolator;
+		final long startOffset = mStartOffset;
 
-        for (int i = 0; i < count; i++) {
-            children.get(i).setStartOffset(offsets[i]);
-        }
-    }
+		long[] storedOffsets = mStoredOffsets;
+		if (startOffsetSet) {
+			if (storedOffsets == null || storedOffsets.length != count) {
+				storedOffsets = mStoredOffsets = new long[count];
+			}
+		} else if (storedOffsets != null) {
+			storedOffsets = mStoredOffsets = null;
+		}
 
-    /**
-     * @return All the child animations in this AnimationSet. Note that
-     * this may include other AnimationSets, which are not expanded.
-     */
-    public List<Animation> getAnimations() {
-        return mAnimations;
-    }
+		for (int i = 0; i < count; i++) {
+			Animation a = children.get(i);
+			if (durationSet) {
+				a.setDuration(duration);
+			}
+			if (fillAfterSet) {
+				a.setFillAfter(fillAfter);
+			}
+			if (fillBeforeSet) {
+				a.setFillBefore(fillBefore);
+			}
+			if (repeatModeSet) {
+				a.setRepeatMode(repeatMode);
+			}
+			if (shareInterpolator) {
+				a.setInterpolator(interpolator);
+			}
+			if (startOffsetSet) {
+				long offset = a.getStartOffset();
+				a.setStartOffset(offset + startOffset);
+				storedOffsets[i] = offset;
+			}
+			a.initialize(width, height, parentWidth, parentHeight);
+		}
+	}
 
-    @Override
-    public boolean willChangeTransformationMatrix() {
-        return (mFlags & PROPERTY_MORPH_MATRIX_MASK) == PROPERTY_MORPH_MATRIX_MASK;
-    }
+	@Override
+	public void reset() {
+		super.reset();
+		restoreChildrenStartOffset();
+	}
 
-    @Override
-    public boolean willChangeBounds() {
-        return (mFlags & PROPERTY_CHANGE_BOUNDS_MASK) == PROPERTY_CHANGE_BOUNDS_MASK;
-    }
+	/**
+	 * @hide
+	 */
+	void restoreChildrenStartOffset() {
+		final long[] offsets = mStoredOffsets;
+		if (offsets == null)
+			return;
+
+		final ArrayList<Animation> children = mAnimations;
+		final int count = children.size();
+
+		for (int i = 0; i < count; i++) {
+			children.get(i).setStartOffset(offsets[i]);
+		}
+	}
+
+	/**
+	 * @return All the child animations in this AnimationSet. Note that this may
+	 *         include other AnimationSets, which are not expanded.
+	 */
+	public List<Animation> getAnimations() {
+		return mAnimations;
+	}
+
+	@Override
+	public boolean willChangeTransformationMatrix() {
+		return (mFlags & PROPERTY_MORPH_MATRIX_MASK) == PROPERTY_MORPH_MATRIX_MASK;
+	}
+
+	@Override
+	public boolean willChangeBounds() {
+		return (mFlags & PROPERTY_CHANGE_BOUNDS_MASK) == PROPERTY_CHANGE_BOUNDS_MASK;
+	}
 }

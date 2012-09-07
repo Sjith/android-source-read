@@ -21,6 +21,8 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 控制动画对象的旋转。在X-Y平面进行旋转，可以指定旋转的中心，(0,0)为设定为左上角，默认情况下使用（0,0）点作为旋转点。
+ * <br>
  * An animation that controls the rotation of an object. This rotation takes
  * place int the X-Y plane. You can specify the point to use for the center of
  * the rotation, where (0,0) is the top left point. If not specified, (0,0) is
@@ -28,15 +30,27 @@ import android.util.AttributeSet;
  * 
  */
 public class RotateAnimation extends Animation {
+	/**
+	 * 开始的角度
+	 */
     private float mFromDegrees;
+    /**
+     * 结束角度
+     */
     private float mToDegrees;
 
     private int mPivotXType = ABSOLUTE;
     private int mPivotYType = ABSOLUTE;
     private float mPivotXValue = 0.0f;
     private float mPivotYValue = 0.0f;
-
+    
+    /**
+     * 旋转点的X坐标
+     */
     private float mPivotX;
+    /**
+     * 旋转点的Y坐标
+     */
     private float mPivotY;
 
     /**

@@ -25,6 +25,8 @@ import android.util.AttributeSet;
 import java.util.Random;
 
 /**
+ * grid动画
+ * <br>
  * A layout animation controller is used to animated a grid layout's children.
  *
  * While {@link LayoutAnimationController} relies only on the index of the child
@@ -394,6 +396,8 @@ public class GridLayoutAnimationController extends LayoutAnimationController {
     }
 
     /**
+     * 动画参数
+     * <br>
      * The set of parameters that has to be attached to each view contained in
      * the view group animated by the grid layout animation controller. These
      * parameters are used to compute the start time of each individual view's

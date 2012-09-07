@@ -21,39 +21,42 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 首先fling到前面，然后超过目标，最后对到目标 <br>
  * An interpolator where the change flings forward and overshoots the last value
  * then comes back.
  */
 public class OvershootInterpolator implements Interpolator {
-    private final float mTension;
+	private final float mTension;
 
-    public OvershootInterpolator() {
-        mTension = 2.0f;
-    }
+	public OvershootInterpolator() {
+		mTension = 2.0f;
+	}
 
-    /**
-     * @param tension Amount of overshoot. When tension equals 0.0f, there is
-     *                no overshoot and the interpolator becomes a simple
-     *                deceleration interpolator.
-     */
-    public OvershootInterpolator(float tension) {
-        mTension = tension;
-    }
+	/**
+	 * @param tension
+	 *            Amount of overshoot. When tension equals 0.0f, there is no
+	 *            overshoot and the interpolator becomes a simple deceleration
+	 *            interpolator.
+	 */
+	public OvershootInterpolator(float tension) {
+		mTension = tension;
+	}
 
-    public OvershootInterpolator(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs,
-                com.android.internal.R.styleable.OvershootInterpolator);
+	public OvershootInterpolator(Context context, AttributeSet attrs) {
+		TypedArray a = context.obtainStyledAttributes(attrs,
+				com.android.internal.R.styleable.OvershootInterpolator);
 
-        mTension =
-                a.getFloat(com.android.internal.R.styleable.OvershootInterpolator_tension, 2.0f);
+		mTension = a.getFloat(
+				com.android.internal.R.styleable.OvershootInterpolator_tension,
+				2.0f);
 
-        a.recycle();
-    }
+		a.recycle();
+	}
 
-    public float getInterpolation(float t) {
-        // _o(t) = t * t * ((tension + 1) * t + tension)
-        // o(t) = _o(t - 1) + 1
-        t -= 1.0f;
-        return t * t * ((mTension + 1) * t + mTension) + 1.0f;
-    }
+	public float getInterpolation(float t) {
+		// _o(t) = t * t * ((tension + 1) * t + tension)
+		// o(t) = _o(t - 1) + 1
+		t -= 1.0f;
+		return t * t * ((mTension + 1) * t + mTension) + 1.0f;
+	}
 }

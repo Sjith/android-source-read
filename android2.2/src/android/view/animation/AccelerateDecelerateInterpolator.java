@@ -20,6 +20,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 /**
+ * 开始和结束都很慢，但是在中间很快
+ * <br>
  * An interpolator where the rate of change starts and ends slowly but
  * accelerates through the middle.
  * 

@@ -21,6 +21,8 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ *  重复一个指定周期的动画，改变的速度按照正弦模式。
+ * <br>
  * Repeats the animation for a specified number of cycles. The
  * rate of change follows a sinusoidal pattern.
  *

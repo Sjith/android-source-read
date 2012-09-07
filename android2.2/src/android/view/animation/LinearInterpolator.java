@@ -20,6 +20,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 /**
+ * 变化的速度是一个常数
+ * <br>
  * An interpolator where the rate of change is constant
  *
  */

@@ -21,6 +21,8 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 缩放一个对象的动画，可以指定一个点用于缩放中心。
+ * <br>
  * An animation that controls the scale of an object. You can specify the point
  * to use for the center of scaling.
  * 
@@ -33,10 +35,18 @@ public class ScaleAnimation extends Animation {
 
     private int mPivotXType = ABSOLUTE;
     private int mPivotYType = ABSOLUTE;
+    /**
+     * x轴缩放值
+     */
     private float mPivotXValue = 0.0f;
+    /**
+     * y轴缩放值
+     */
     private float mPivotYValue = 0.0f;
 
+    //x轴中心
     private float mPivotX;
+    //y轴中心
     private float mPivotY;
 
     /**

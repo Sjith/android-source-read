@@ -21,6 +21,8 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 修改弹跳的一种插值器
+ * <br>
  * An interpolator where the change bounces at the end.
  */
 public class BounceInterpolator implements Interpolator {

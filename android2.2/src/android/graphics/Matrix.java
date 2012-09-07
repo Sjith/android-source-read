@@ -20,6 +20,8 @@ import java.io.PrintWriter;
 
 
 /**
+ * Matrix使用了一个3x3矩阵来进行坐标转换
+ * <br>
  * The Matrix class holds a 3x3 matrix for transforming coordinates.
  * Matrix does not have a constructor, so it must be explicitly initialized
  * using either reset() - to construct an identity matrix, or one of the set..()
@@ -72,6 +74,8 @@ public class Matrix {
     }
 
     /**
+     * 使用指定的matrix来设置本matrix，如果指定的matrix为null，则设置本matrix为identity matrix
+     * <br>
      * (deep) copy the src matrix into this matrix. If src is null, reset this
      * matrix to the identity matrix.
      */
@@ -91,7 +95,7 @@ public class Matrix {
                native_equals(native_instance, ((Matrix)obj).native_instance);
     }
 
-    /** Set the matrix to identity */
+    /** Set the matrix to identity 设置matrix为identity*/
     public void reset() {
         native_reset(native_instance);
     }

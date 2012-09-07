@@ -21,36 +21,43 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 在后面开始然后flings到前面的插值器 <br>
  * An interpolator where the change starts backward then flings forward.
  */
 public class AnticipateInterpolator implements Interpolator {
-    private final float mTension;
+	/**
+	 * 张力
+	 */
+	private final float mTension;
 
-    public AnticipateInterpolator() {
-        mTension = 2.0f;
-    }
+	public AnticipateInterpolator() {
+		mTension = 2.0f;
+	}
 
-    /**
-     * @param tension Amount of anticipation. When tension equals 0.0f, there is
-     *                no anticipation and the interpolator becomes a simple
-     *                acceleration interpolator.
-     */
-    public AnticipateInterpolator(float tension) {
-        mTension = tension;
-    }
+	/**
+	 * @param tension
+	 * 			预期值，如果tension为0.0，则没有预期值，插值器变成一个简单的加速插值器.
+	 *            Amount of anticipation. When tension equals 0.0f, there is no
+	 *            anticipation and the interpolator becomes a simple
+	 *            acceleration interpolator.
+	 */
+	public AnticipateInterpolator(float tension) {
+		mTension = tension;
+	}
 
-    public AnticipateInterpolator(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs,
-                com.android.internal.R.styleable.AnticipateInterpolator);
+	public AnticipateInterpolator(Context context, AttributeSet attrs) {
+		TypedArray a = context.obtainStyledAttributes(attrs,
+				com.android.internal.R.styleable.AnticipateInterpolator);
 
-        mTension =
-                a.getFloat(com.android.internal.R.styleable.AnticipateInterpolator_tension, 2.0f);
+		mTension = a.getFloat(
+						com.android.internal.R.styleable.AnticipateInterpolator_tension,
+						2.0f);
 
-        a.recycle();
-    }
+		a.recycle();
+	}
 
-    public float getInterpolation(float t) {
-        // a(t) = t * t * ((tension + 1) * t - tension)
-        return t * t * ((mTension + 1) * t - mTension);
-    }
+	public float getInterpolation(float t) {
+		// a(t) = t * t * ((tension + 1) * t - tension)
+		return t * t * ((mTension + 1) * t - mTension);
+	}
 }

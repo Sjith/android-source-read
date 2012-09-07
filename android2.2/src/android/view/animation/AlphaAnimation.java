@@ -21,13 +21,21 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 
 /**
+ * 控制动画对象的alpha通道，对于淡入淡出效果非常有用。本动画用于修改{@link Transformation}的alpha属性。
+ * <br>
  * An animation that controls the alpha level of an object.
  * Useful for fading things in and out. This animation ends up
  * changing the alpha property of a {@link Transformation}
  *
  */
 public class AlphaAnimation extends Animation {
+	/**
+	 * alpha通道的开始值
+	 */
     private float mFromAlpha;
+    /**
+     * alpha通道的结束值
+     */
     private float mToAlpha;
 
     /**

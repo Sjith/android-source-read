@@ -3525,6 +3525,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 
         /**
          * Used to animate layouts.
+         * <br>
+         * 用于动画layouts的参数
          */
         public LayoutAnimationController.AnimationParameters layoutAnimationParameters;
 
