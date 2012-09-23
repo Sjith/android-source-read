@@ -45,6 +45,7 @@ public class CursorWindowTest extends TestCase implements PerformanceTestCase {
         // create cursor
         String[] colNames = new String[]{"name", "number", "profit"};
         int colsize = colNames.length;
+        //10*3
         ArrayList<ArrayList> list = createTestList(10, colsize);
         AbstractCursor cursor = new ArrayListCursor(colNames, (ArrayList<ArrayList>) list);
 

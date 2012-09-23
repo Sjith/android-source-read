@@ -19,15 +19,21 @@ package android.database.sqlite;
 import android.database.CursorWindow;
 
 /**
+ * 被SQLiteDatabase创建的可以被关闭的对象
+ * <br>
  * An object created from a SQLiteDatabase that can be closed.
  */
 public abstract class SQLiteClosable {
+	/**本对象的引用个数*/
     private int mReferenceCount = 1;
     private Object mLock = new Object();
 
     protected abstract void onAllReferencesReleased();
     protected void onAllReferencesReleasedFromContainer() {}
 
+    /**
+     * 获取引用
+     */
     public void acquireReference() {
         synchronized(mLock) {
             if (mReferenceCount <= 0) {
@@ -38,6 +44,9 @@ public abstract class SQLiteClosable {
         }
     }
 
+    /**
+     * 释放引用
+     */
     public void releaseReference() {
         synchronized(mLock) {
             mReferenceCount--;
@@ -56,6 +65,10 @@ public abstract class SQLiteClosable {
         }
     }
 
+    /**
+     * 获取本对象的信息
+     * @return
+     */
     private String getObjInfo() {
         StringBuilder buff = new StringBuilder();
         buff.append(this.getClass().getName());

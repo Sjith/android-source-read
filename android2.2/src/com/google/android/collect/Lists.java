@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * 提供创建{@code List}对象的静态简便方法，其他方法可以使用该方法
+ * <br>
  * Provides static methods for creating {@code List} instances easily, and other
  * utility methods for working with lists. 
  */

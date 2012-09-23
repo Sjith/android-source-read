@@ -25,6 +25,7 @@ import java.util.Map;
 
 /**
  * Wrapper class for Cursor that delegates all calls to the actual cursor object
+ * <br>Cursor封装器，是真正的cursor对象的代理
  */
 
 public class CursorWrapper implements Cursor {
